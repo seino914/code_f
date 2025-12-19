@@ -13,6 +13,12 @@ code_f/
 └── package.json  # ルート設定
 ```
 
+## 開発環境のポート
+
+- **フロントエンド**: http://localhost:3000
+- **バックエンド**: http://localhost:3001
+- **Swagger UI**: http://localhost:3001/api
+
 ## 環境構築
 
 ### 依存関係のインストール
@@ -30,10 +36,13 @@ pnpm dev
 
 ### 個別の開発サーバー起動
 ```bash
-# バックエンドのみ起動（ポート: 3001）
+# バックエンドのみ起動
+# → http://localhost:3001
+# → Swagger UI: http://localhost:3001/api
 pnpm --filter backend dev
 
-# フロントエンドのみ起動（ポート: 3000）
+# フロントエンドのみ起動
+# → http://localhost:3000
 pnpm --filter frontend dev
 ```
 
