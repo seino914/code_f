@@ -1,0 +1,55 @@
+---
+description: Code_F プロジェクト全体コンテキスト（Next.js + NestJS モノレポ）
+globs:
+alwaysApply: true
+---
+
+## プロジェクト概要
+
+- このリポジトリは **Next.js (frontend)** と **NestJS (backend)** のモノレポ。
+- **pnpm workspaces** + **Turborepo** でタスクを実行する。
+
+## 技術スタック
+
+- **Frontend**: Next.js 16.1.0 (App Router), React 19.2.3, TypeScript 5, Tailwind CSS 4, ESLint
+- **Backend**: NestJS 11.0.1, Prisma 7.2.0, PostgreSQL, Swagger/OpenAPI, TypeScript 5.7.3, Jest
+
+## ディレクトリ構成（要点）
+
+- `frontend/`: Next.js App Router（`frontend/app/` 配下に `page.tsx`, `layout.tsx` など）
+- `backend/`: NestJS（`backend/src/main.ts` がエントリーポイント、`backend/prisma/schema.prisma` がスキーマ）
+- ルート: `turbo.json`, `pnpm-workspace.yaml`, `package.json`
+
+## 開発用ポート
+
+- **Frontend**: `http://localhost:3000`
+- **Backend**: `http://localhost:3001`
+- **Swagger UI**: `http://localhost:3001/api`
+
+## 代表コマンド（ルートで実行）
+
+- `pnpm dev` / `pnpm build` / `pnpm lint` / `pnpm test` / `pnpm clean`
+- 個別起動: `pnpm --filter backend dev` / `pnpm --filter frontend dev`
+
+## コーディング方針（重要）
+
+- **TypeScript を厳密に**使い、`any` は避ける
+- **Next.js**: Server Components がデフォルト。Client Component は `'use client'` を明示
+- **NestJS**: 機能単位でモジュール分割、DI を前提に設計
+- **Prisma**: スキーマ変更後は `prisma:migrate` と `prisma:generate` を忘れない
+- 複雑なロジックには **日本語コメント**を追加して意図を残す
+- **null を許容しない**:
+  - 可能な限り型は `null` ではなく `undefined` / Optional (`?`) / 例外 / Result 型等で表現する
+  - Prisma 等で `null` が来うる場合も、境界で変換して以降は `null` を扱わない
+- **ループ**:
+  - `forEach` はできるだけ使わない（早期 return/break/continue が効かず制御が追いにくいため）
+  - 代わりに `for...of` / `map` / `filter` / `reduce` を使い分ける
+- **条件分岐**:
+  - `if` は **早期リターン**を心がける（ガード句でネストを浅くする）
+  - `if` のネストはできるだけ避ける（複雑な処理などで本当に必要な場合のみ許容）
+
+## テスト方針（重要）
+
+- **テストケースの書き方**: 「**◯◯の場合、◯◯であること**」で統一する（describe/it の文言もこの形式に寄せる）
+- **当面の範囲**: **テストはバックエンドのみ**に記載する（フロントエンドのテストは書かない/要求しない）
+
