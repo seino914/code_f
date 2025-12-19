@@ -74,6 +74,9 @@ frontend/next-env.d.ts
 # Vercel
 .vercel/
 
+# Turborepo
+.turbo/
+
 # Package manager lock files (optional - uncomment if you want to ignore them)
 # pnpm-lock.yaml
 # package-lock.json
