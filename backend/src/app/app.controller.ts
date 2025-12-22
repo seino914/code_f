@@ -12,5 +12,6 @@ export class AppController {
   @ApiResponse({ status: 200, description: '正常なレスポンス', type: String })
   getHello(): string {
     return this.appService.getHello();
+    return 'Hello World';
   }
 }
