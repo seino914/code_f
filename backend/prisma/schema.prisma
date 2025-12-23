@@ -17,10 +17,8 @@ model User {
   id        String   @id @default(uuid()) @map("id")
   name      String   @map("name")
   email     String   @unique
-  password  String?  @map("password") // メールアドレスログイン時のみ必須、Googleログイン時はnull
-  googleId  String?  @unique @map("google_id") // Googleログイン時のみ設定
-  provider  String   @default("email") @map("provider") // "email" または "google"
-  role      String   @default("user") @map("role") // 現状使用しない（今後追加する可能性あり）
+  password  String   @map("password")
+  role      String?  @map("role")
   company   String   @map("company")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
