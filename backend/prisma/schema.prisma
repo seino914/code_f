@@ -13,3 +13,72 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id        String   @id @default(uuid()) @map("id")
+  name      String   @map("name")
+  email     String   @unique
+  password  String?  @map("password") // メールアドレスログイン時のみ必須、Googleログイン時はnull
+  googleId  String?  @unique @map("google_id") // Googleログイン時のみ設定
+  provider  String   @default("email") @map("provider") // "email" または "google"
+  role      String   @default("user") @map("role") // 現状使用しない（今後追加する可能性あり）
+  company   String   @map("company")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+model Ingredient {
+  id                                    String   @id @default(uuid()) @map("id")
+  name                                  String   @map("name") // 食材名
+  category                              String   @map("category") // カテゴリ
+  unit                                  Unit     @map("unit") // 単位
+  unitPrice                             Decimal  @map("unit_price") @db.Decimal(10, 2) // 単価
+  purchaseDate                          DateTime @map("purchase_date") // 仕入日
+  purchaseUnit                          String   @map("purchase_unit") // 仕入単位
+  purchaseTotal                         Decimal  @map("purchase_total") @db.Decimal(10, 2) // 仕入合計
+  purchaseSubtotal                      Decimal  @map("purchase_subtotal") @db.Decimal(10, 2) // 仕入小計
+  usageAmount                           Decimal  @map("usage_amount") @db.Decimal(10, 2) // 使用量
+  purchaseAmount                        Decimal  @map("purchase_amount") @db.Decimal(10, 2) // 仕入額
+  monthlyUsageAmount                    Decimal  @map("monthly_usage_amount") @db.Decimal(10, 2) // 当月使用額
+  ingredientCost                        Decimal  @map("ingredient_cost") @db.Decimal(10, 2) // 食材原価
+  previousMonthActualStock              Decimal  @map("previous_month_actual_stock") @db.Decimal(10, 2) // 前月実地在庫
+  currentMonthActualStock               Decimal  @map("current_month_actual_stock") @db.Decimal(10, 2) // 当月実地在庫
+  currentMonthInventoryAmount           Decimal  @map("current_month_inventory_amount") @db.Decimal(10, 2) // 当月棚卸金額
+  stockAmount                           Decimal  @map("stock_amount") @db.Decimal(10, 2) // 在庫額
+  currentMonthTheoreticalMaterialValue  Decimal  @map("current_month_theoretical_material_value") @db.Decimal(10, 2) // 当月理論材料値
+  currentMonthTheoreticalStock          Decimal  @map("current_month_theoretical_stock") @db.Decimal(10, 2) // 当月理論在庫
+  varianceAmount                        Decimal  @map("variance_amount") @db.Decimal(10, 2) // 差異量
+  varianceAmountMoney                   Decimal  @map("variance_amount_money") @db.Decimal(10, 2) // 差異金額
+  varianceRate                          Decimal  @map("variance_rate") @db.Decimal(5, 2) // 差異率（パーセンテージ）
+  createdAt                             DateTime @default(now()) @map("created_at")
+  updatedAt                             DateTime @updatedAt @map("updated_at")
+}
+
+model Menu {
+  id                            String   @id @default(uuid()) @map("id")
+  name                          String   @map("name") // メニュー名
+  category                      Category @map("category") // カテゴリ
+  menuCost                      Decimal  @map("menu_cost") @db.Decimal(10, 2) // メニュー原価
+  servingCount                  Int      @map("serving_count") // 食数
+  menuTheoreticalCost           Decimal  @map("menu_theoretical_cost") @db.Decimal(10, 2) // メニュー理論原価
+  ingredientTheoreticalCost     Decimal  @map("ingredient_theoretical_cost") @db.Decimal(10, 2) // 食材理論原価
+  sellingPrice                  Decimal  @map("selling_price") @db.Decimal(10, 2) // 売価
+  monthlySales                  Decimal  @map("monthly_sales") @db.Decimal(10, 2) // 月間売上高
+  ingredientTheoreticalCostRate Decimal  @map("ingredient_theoretical_cost_rate") @db.Decimal(5, 2) // 食材理論原価率（パーセンテージ）
+  ingredientCostRate            Decimal  @map("ingredient_cost_rate") @db.Decimal(5, 2) // 食材原価率（パーセンテージ）
+  createdAt                     DateTime @default(now()) @map("created_at")
+  updatedAt                     DateTime @updatedAt @map("updated_at")
+}
+
+enum Unit {
+  GRAM     // g
+  KILOGRAM // kg
+  STICK    // 本（細長いものを数える単位）
+  PIECE    // 個（一般的な個数を表す単位）
+}
+
+enum Category {
+  REGULAR    // レギュラー
+  SINGLE     // 単品
+  LUNCH_BOX  // 弁当
+}
