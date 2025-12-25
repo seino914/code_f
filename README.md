@@ -22,8 +22,6 @@ pnpm --filter backend prisma:migrate
 pnpm dev
 ```
 
-これで http://localhost:3000 (フロントエンド) と http://localhost:3001 (バックエンド) にアクセスできます。
-
 ## ディレクトリ構成
 ```
 code_f/
@@ -44,7 +42,7 @@ code_f/
 
 - **Node.js**: v20 以上
 - **pnpm**: v9 以上
-- **Docker**: Docker Desktop または Docker Engine
+- **Docker**: Docker Desktopのインストール
 
 ### 1. 依存関係のインストール
 
