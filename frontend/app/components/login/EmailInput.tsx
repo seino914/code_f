@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { emailSchema } from '../../lib/validations/login.schema';
 
 interface EmailInputProps {
   value: string;
@@ -13,25 +14,13 @@ const baseInputClassName =
   'block w-full rounded-lg border bg-white px-3 py-2.5 text-sm text-gray-900 shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2';
 
 /**
- * メールアドレスのバリデーション
- * RFC 5322 に準拠した基本的な形式チェック
+ * メールアドレスのバリデーション（Zodを使用）
  */
 const validateEmail = (email: string): string | undefined => {
-  if (!email) {
-    return 'メールアドレスを入力してください';
+  const result = emailSchema.safeParse(email);
+  if (!result.success) {
+    return result.error.issues[0]?.message;
   }
-
-  // 基本的なメールアドレス形式のチェック
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return 'メールアドレスの形式が正しくありません';
-  }
-
-  // より厳密なチェック（連続ドット、先頭/末尾のドットなど）
-  if (email.includes('..') || email.startsWith('.') || email.endsWith('.')) {
-    return 'メールアドレスの形式が正しくありません';
-  }
-
   return undefined;
 };
 
@@ -51,10 +40,20 @@ export function EmailInput({
       const newValue = event.target.value;
       onChange(newValue);
 
-      // 入力中はエラーをクリア（フォーカスアウト時に再検証）
+      // 入力中はエラーをクリア
       if (error) {
         setError(undefined);
-        onValidationChange(true);
+      }
+      
+      // リアルタイムバリデーション（空でない場合のみ）
+      if (newValue.length > 0) {
+        const validationError = validateEmail(newValue);
+        setError(validationError);
+        onValidationChange(!validationError);
+      } else {
+        // 空の場合はバリデーション状態をリセット
+        setError(undefined);
+        onValidationChange(false);
       }
     },
     [error, onChange, onValidationChange]
