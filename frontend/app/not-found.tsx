@@ -1,15 +1,16 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 /**
  * カスタム404ページ
  * 未ログインの場合は自動的にログインページにリダイレクト
- * ログイン済みの場合のみ404メッセージを表示
+ * ログイン済みの場合は404メッセージを表示（リダイレクトしない）
  */
 export default function NotFound() {
   const router = useRouter();
+  const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
     // クッキーから認証トークンを確認
@@ -21,8 +22,17 @@ export default function NotFound() {
     // 未ログインの場合はログインページにリダイレクト
     if (!token) {
       router.replace('/');
+      return;
     }
+
+    // ログイン済みの場合は404ページを表示（リダイレクトしない）
+    setIsChecking(false);
   }, [router]);
+
+  // 認証チェック中は何も表示しない（リダイレクト処理中）
+  if (isChecking) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 px-4">
