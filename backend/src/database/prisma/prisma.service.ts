@@ -1,17 +1,25 @@
-import { Injectable, OnModuleInit, OnModuleDestroy, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  OnModuleInit,
+  OnModuleDestroy,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '../../../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   private logger!: Logger;
 
   constructor(private readonly configService: ConfigService) {
     // super()を呼ぶ前に環境変数を取得
     const databaseUrl = configService.get<string>('DATABASE_URL');
-    
+
     if (!databaseUrl) {
       throw new Error(
         'DATABASE_URL環境変数が設定されていません。backend/.envファイルにDATABASE_URLを設定してください。',
@@ -22,7 +30,9 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     try {
       const url = new URL(databaseUrl);
       if (url.protocol !== 'postgresql:' && url.protocol !== 'postgres:') {
-        throw new Error(`DATABASE_URLのプロトコルが正しくありません: ${url.protocol}`);
+        throw new Error(
+          `DATABASE_URLのプロトコルが正しくありません: ${url.protocol}`,
+        );
       }
     } catch (error) {
       if (error instanceof TypeError) {
