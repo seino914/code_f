@@ -6,33 +6,30 @@ import type { NextRequest } from 'next/server';
  * ログインしていないユーザーを保護されたページから遮断する
  * 
  * 動作：
- * - ログインページ（`/`）以外の全てのパスで認証チェック
- * - 未ログインの場合：存在しないパス（404になるURL）でもログインページにリダイレクト
- * - ログイン済みの場合：存在しないパス（404になるURL）は404ページを表示（リダイレクトしない）
- * - ログイン済みでログインページにアクセスした場合はダッシュボードにリダイレクト
+ * - ログインページ（`/`）へのアクセスのみ制御
+ * - 未ログインでログインページ以外にアクセス → ログインページにリダイレクト
+ * - ログイン済みでログインページにアクセス → ダッシュボードにリダイレクト
+ * - ログイン済みで他のページにアクセス → そのまま通過（存在しないページは404表示）
  */
 export function middleware(request: NextRequest) {
-  // 認証トークン
   const token = request.cookies.get('auth-token')?.value;
-
   const { pathname } = request.nextUrl;
 
-  // ログインページ（ルート）へのアクセスは常に許可
+  // ログインページ（ルート）へのアクセス
   if (pathname === '/') {
-    // すでにログイン済みの場合はダッシュボードにリダイレクト
     if (token) {
+      // ログイン済みならダッシュボードへ
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return NextResponse.next();
   }
 
-  // 未ログインの場合：全てのパス（存在しないパスも含む）でログインページにリダイレクト
+  // 未ログインの場合：ログインページにリダイレクト
   if (!token) {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // ログイン済みの場合：全てのパスを通過させる
-  // 存在しないパスはNext.jsが自動的に404ページを表示する
+  // ログイン済みの場合：そのまま通過
   return NextResponse.next();
 }
 
