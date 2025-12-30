@@ -88,7 +88,6 @@ export function EmailLoginForm({
       <PasswordInput
         value={password}
         onChange={handlePasswordChange}
-        onForgotPassword={onForgotPassword}
         onValidationChange={setIsPasswordValid}
       />
 

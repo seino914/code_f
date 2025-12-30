@@ -2,12 +2,11 @@
 
 import { useCallback, useState } from 'react';
 import { passwordSchema } from '../../lib/validations/login.schema';
+import Link from 'next/link';
 
 interface PasswordInputProps {
   value?: string;
   onChange?: (value: string) => void;
-  showForgotPassword?: boolean;
-  onForgotPassword?: () => void;
   onValidationChange?: (isValid: boolean) => void;
 }
 
@@ -32,8 +31,6 @@ const validatePassword = (password: string): string | undefined => {
 export function PasswordInput({
   value: controlledValue,
   onChange,
-  showForgotPassword = true,
-  onForgotPassword,
   onValidationChange,
 }: PasswordInputProps) {
   const [error, setError] = useState<string | undefined>();
@@ -86,23 +83,12 @@ export function PasswordInput({
 
   return (
     <div className="space-y-1.5">
-      <div className="flex items-center justify-between">
-        <label
-          htmlFor="password"
-          className="block text-sm font-medium text-gray-700"
-        >
-          パスワード
-        </label>
-        {showForgotPassword && (
-          <button
-            type="button"
-            onClick={onForgotPassword}
-            className="text-xs text-sky-600 hover:text-sky-700"
-          >
-            パスワードをお忘れですか？
-          </button>
-        )}
-      </div>
+      <label
+        htmlFor="password"
+        className="block text-sm font-medium text-gray-700"
+      >
+        パスワード
+      </label>
       <input
         id="password"
         name="password"
@@ -123,6 +109,11 @@ export function PasswordInput({
           {error}
         </p>
       )}
+      <div className="flex items-center justify-end">
+        <Link href="/password-reset" className="text-xs text-sky-600 hover:text-sky-700 block">
+          パスワードをお忘れですか？
+        </Link>
+      </div>
     </div>
   );
 }
