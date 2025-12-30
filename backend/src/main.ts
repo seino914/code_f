@@ -8,7 +8,7 @@ import { Request, Response, NextFunction } from 'express';
 import { randomUUID } from 'crypto';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { validateEnvironmentVariables } from './common/validators/env.validator';
+import { validateEnvironmentVariables } from './shared/validators/env.validator';
 
 /**
  * アプリケーションの起動処理
@@ -34,8 +34,7 @@ async function bootstrap() {
 
   // リクエストIDミドルウェア（ログの追跡のため）
   app.use((req: Request, res: Response, next: NextFunction) => {
-    const requestId =
-      (req.headers['x-request-id'] as string) || randomUUID();
+    const requestId = (req.headers['x-request-id'] as string) || randomUUID();
     (req as Request & { requestId: string }).requestId = requestId;
     res.setHeader('X-Request-ID', requestId);
     next();

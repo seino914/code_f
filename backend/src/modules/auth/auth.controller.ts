@@ -11,7 +11,12 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -150,4 +155,3 @@ export class AuthController {
     };
   }
 }
-

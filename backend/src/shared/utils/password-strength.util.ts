@@ -17,7 +17,9 @@ export interface PasswordStrengthResult {
  * - 数字を含む
  * - 記号を含む（オプション、推奨）
  */
-export function checkPasswordStrength(password: string): PasswordStrengthResult {
+export function checkPasswordStrength(
+  password: string,
+): PasswordStrengthResult {
   const errors: string[] = [];
 
   if (password.length < 8) {

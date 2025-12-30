@@ -3,10 +3,7 @@
  * 必須環境変数が設定されているかチェック
  */
 export function validateEnvironmentVariables() {
-  const requiredEnvVars = [
-    'DATABASE_URL',
-    'JWT_SECRET',
-  ];
+  const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET'];
 
   const missingVars: string[] = [];
 
@@ -44,4 +41,3 @@ export function validateEnvironmentVariables() {
     }
   }
 }
-
