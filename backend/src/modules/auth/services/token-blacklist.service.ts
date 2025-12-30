@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../../database/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 
 /**
@@ -22,9 +22,7 @@ export class TokenBlacklistService {
   async addToBlacklist(token: string): Promise<void> {
     try {
       // トークンをデコードして有効期限を取得
-      const decoded = this.jwtService.decode(token) as {
-        exp?: number;
-      } | null;
+      const decoded = this.jwtService.decode(token);
 
       if (!decoded || !decoded.exp) {
         this.logger.warn('Invalid token format, cannot add to blacklist');
@@ -51,7 +49,9 @@ export class TokenBlacklistService {
         },
       });
 
-      this.logger.log(`Token added to blacklist (expires at: ${expiresAt.toISOString()})`);
+      this.logger.log(
+        `Token added to blacklist (expires at: ${expiresAt.toISOString()})`,
+      );
     } catch (error) {
       this.logger.error(`Failed to add token to blacklist: ${error}`);
       // エラーが発生しても処理を続行（トークンの無効化は重要だが、アプリケーションを停止させるほどではない）
@@ -93,7 +93,9 @@ export class TokenBlacklistService {
       });
 
       if (result.count > 0) {
-        this.logger.log(`Cleaned up ${result.count} expired tokens from blacklist`);
+        this.logger.log(
+          `Cleaned up ${result.count} expired tokens from blacklist`,
+        );
       }
     } catch (error) {
       this.logger.error(`Failed to cleanup expired tokens: ${error}`);

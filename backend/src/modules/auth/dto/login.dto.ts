@@ -36,4 +36,3 @@ const LoginResponseSchema = z.object({
  * ログイン成功レスポンスDTO（Zodスキーマから生成）
  */
 export class LoginResponseDto extends createZodDto(LoginResponseSchema) {}
-

@@ -1,38 +1,18 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-
 /**
  * カスタム404ページ
- * 未ログインの場合は自動的にログインページにリダイレクト
- * ログイン済みの場合は404メッセージを表示（リダイレクトしない）
+ * 
+ * 認証チェックは middleware.ts で行われるため、
+ * このページは純粋に404エラー表示のみを担当する
+ * 
+ * - 未ログインユーザー: middleware により `/` へリダイレクト済み
+ * - ログインユーザー: この404ページが表示される
  */
 export default function NotFound() {
-  const router = useRouter();
-  const [isChecking, setIsChecking] = useState(true);
-
-  useEffect(() => {
-    // クッキーから認証トークンを確認
-    const token = document.cookie
-      .split('; ')
-      .find((row) => row.startsWith('auth-token='))
-      ?.split('=')[1];
-
-    // 未ログインの場合はログインページにリダイレクト
-    if (!token) {
-      router.replace('/');
-      return;
-    }
-
-    // ログイン済みの場合は404ページを表示（リダイレクトしない）
-    setIsChecking(false);
-  }, [router]);
-
-  // 認証チェック中は何も表示しない（リダイレクト処理中）
-  if (isChecking) {
-    return null;
-  }
+  const handleGoBack = () => {
+    window.history.back();
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-gray-100 px-4">
@@ -50,21 +30,13 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <button
             type="button"
-            onClick={() => window.history.back()}
+            onClick={handleGoBack}
             className="rounded-lg bg-sky-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 hover:bg-sky-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
           >
             前のページに戻る
-          </button>
-          <button
-            type="button"
-            onClick={() => router.push('/dashboard')}
-            className="rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2"
-          >
-            ダッシュボードに戻る
           </button>
         </div>
       </div>
     </div>
   );
 }
-

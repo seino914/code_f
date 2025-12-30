@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../../database/prisma/prisma.service';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 
 /**
@@ -72,11 +72,16 @@ export class AuthService {
       const dummyHash =
         '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
       await bcrypt.compare(loginDto.password, dummyHash);
-      throw new UnauthorizedException('メールアドレスまたはパスワードが正しくありません');
+      throw new UnauthorizedException(
+        'メールアドレスまたはパスワードが正しくありません',
+      );
     }
 
     // パスワードの検証
-    const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      loginDto.password,
+      user.password,
+    );
 
     if (!isPasswordValid) {
       // ログイン失敗回数を増加
@@ -134,4 +139,3 @@ export class AuthService {
     };
   }
 }
-

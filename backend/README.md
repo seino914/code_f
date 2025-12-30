@@ -1,98 +1,147 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# バックエンド アーキテクチャ
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## ディレクトリ構成
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ pnpm install
+```
+src/
+├── main.ts                      # エントリーポイント
+├── app.module.ts                # ルートモジュール
+│
+├── modules/                     # ドメインモジュール（機能単位）
+│   └── auth/                   # 認証モジュール
+│       ├── decorators/         # 認証固有のデコレーター
+│       │   ├── current-user.decorator.ts
+│       │   └── public.decorator.ts
+│       ├── dto/                # Data Transfer Objects
+│       │   └── login.dto.ts
+│       ├── guards/             # 認証固有のガード
+│       │   └── jwt-auth.guard.ts
+│       ├── services/           # サービス
+│       │   └── token-blacklist.service.ts
+│       ├── strategies/         # Passport戦略
+│       │   └── jwt.strategy.ts
+│       ├── auth.controller.ts  # コントローラー
+│       ├── auth.service.ts     # サービス
+│       └── auth.module.ts      # モジュール定義
+│
+├── database/                    # データベース関連
+│   └── prisma/                 # Prisma ORM
+│       ├── prisma.service.ts   # Prismaサービス
+│       └── prisma.module.ts    # Prismaモジュール
+│
+├── common/                      # アプリケーション共通コンポーネント
+│   ├── filters/                # 例外フィルター
+│   │   └── http-exception.filter.ts
+│   ├── guards/                 # 共通ガード（将来）
+│   ├── interceptors/           # インターセプター（将来）
+│   ├── middleware/             # ミドルウェア
+│   │   └── request-id.middleware.ts
+│   └── pipes/                  # バリデーションパイプ（将来）
+│
+├── shared/                      # 共有ユーティリティ
+│   ├── utils/                  # ユーティリティ関数
+│   │   ├── log-mask.util.ts
+│   │   └── password-strength.util.ts
+│   ├── validators/             # 汎用バリデーター
+│   │   └── env.validator.ts
+│   ├── constants/              # 定数（将来）
+│   ├── types/                  # 型定義（将来）
+│   └── interfaces/             # インターフェース（将来）
+│
+└── config/                      # 設定ファイル（将来）
+    ├── app.config.ts           # アプリケーション設定
+    └── database.config.ts      # データベース設定
 ```
 
-## Compile and run the project
+## 設計原則
 
-```bash
-# development
-$ pnpm run start
+### 1. ドメイン駆動設計（DDD）
+- 機能ごとにモジュールを分割（`modules/`配下）
+- 各モジュールは独立性を保ち、疎結合を維持
+- ビジネスロジックはサービス層に集約
 
-# watch mode
-$ pnpm run start:dev
+### 2. 責任の分離
+- **modules/**: ビジネスロジック・ドメイン固有の処理
+- **common/**: アプリケーション全体で使用する横断的関心事
+- **shared/**: 汎用的なユーティリティ・ヘルパー関数
+- **database/**: データアクセス層
+- **config/**: 設定管理
 
-# production mode
-$ pnpm run start:prod
+### 3. スケーラビリティ
+- 新しい機能は`modules/`配下に新しいモジュールとして追加
+- 共通処理は`common/`または`shared/`に抽出
+- モジュール間の依存は最小限に保つ
+
+## モジュールの追加方法
+
+新しい機能を追加する場合は、以下の構造に従ってください：
+
+```
+modules/
+└── [feature-name]/
+    ├── dto/                    # Data Transfer Objects
+    ├── entities/               # エンティティ（オプション）
+    ├── services/               # ビジネスロジック
+    ├── [feature-name].controller.ts
+    ├── [feature-name].service.ts
+    └── [feature-name].module.ts
 ```
 
-## Run tests
+### 例: ユーザー管理機能の追加
 
-```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+```
+modules/
+└── users/
+    ├── dto/
+    │   ├── create-user.dto.ts
+    │   └── update-user.dto.ts
+    ├── users.controller.ts
+    ├── users.service.ts
+    └── users.module.ts
 ```
 
-## Deployment
+## インポートパスの規則
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+- **絶対パス**は使用せず、相対パスを使用
+- モジュール間の依存は`../../`形式で明示
+- 共通コンポーネントは`../../common/`または`../../shared/`からインポート
+- データベースは`../../database/prisma/`からインポート
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 例
 
-```bash
-$ pnpm install -g @nestjs/mau
-$ mau deploy
+```typescript
+// modules/auth/auth.service.ts
+import { PrismaService } from '../../database/prisma/prisma.service';
+import { maskSensitiveData } from '../../shared/utils/log-mask.util';
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+## ベストプラクティス
 
-## Resources
+1. **単一責任の原則**: 各クラス・関数は1つの責任のみを持つ
+2. **依存性注入**: コンストラクタインジェクションを使用
+3. **型安全性**: TypeScriptの型を厳密に使用（`any`を避ける）
+4. **エラーハンドリング**: グローバル例外フィルターで統一
+5. **バリデーション**: DTOとZodスキーマで入力を検証
+6. **セキュリティ**: 認証・認可・レート制限を適切に実装
+7. **ログ**: 機密情報をマスクし、リクエストIDで追跡可能に
+8. **テスト**: 各モジュールにテストファイルを配置
 
-Check out a few resources that may come in handy when working with NestJS:
+## 今後の拡張
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+以下の機能を追加する際の配置場所：
 
-## Support
+- **ユーザー管理**: `modules/users/`
+- **商品管理**: `modules/products/`
+- **注文管理**: `modules/orders/`
+- **通知機能**: `modules/notifications/`
+- **ファイルアップロード**: `common/services/file-upload.service.ts`
+- **メール送信**: `common/services/email.service.ts`
+- **キャッシュ**: `common/services/cache.service.ts`
+- **ロギング**: `common/services/logger.service.ts`
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+## 参考資料
 
-## Stay in touch
+- [NestJS公式ドキュメント](https://docs.nestjs.com/)
+- [NestJS Best Practices](https://docs.nestjs.com/fundamentals/testing)
+- [Domain-Driven Design](https://martinfowler.com/bliki/DomainDrivenDesign.html)
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

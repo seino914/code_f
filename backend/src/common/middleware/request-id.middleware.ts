@@ -10,7 +10,7 @@ import { randomUUID } from 'crypto';
 export class RequestIdMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     // リクエストIDを生成（既に存在する場合は使用）
-    const requestId = req.headers['x-request-id'] as string || randomUUID();
+    const requestId = (req.headers['x-request-id'] as string) || randomUUID();
 
     // リクエストオブジェクトに追加
     (req as Request & { requestId: string }).requestId = requestId;
@@ -21,4 +21,3 @@ export class RequestIdMiddleware implements NestMiddleware {
     next();
   }
 }
-

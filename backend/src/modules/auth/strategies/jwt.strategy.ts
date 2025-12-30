@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../../database/prisma/prisma.service';
 import { TokenBlacklistService } from '../services/token-blacklist.service';
 
 /**
@@ -27,20 +27,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     // super()を呼ぶ前に環境変数を取得
     const secret = configService.get<string>('JWT_SECRET');
     const nodeEnv = configService.get<string>('NODE_ENV');
-    
+
     if (!secret && nodeEnv === 'production') {
       throw new Error(
         'JWT_SECRET環境変数が設定されていません。本番環境では必須です。',
       );
     }
-    
+
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         // クッキーからトークンを取得
         (request: any) => {
           // Expressのrequestオブジェクトからクッキーを取得
           let token: string | null = null;
-          
+
           if (request?.cookies?.['auth-token']) {
             token = request.cookies['auth-token'];
           } else if (request?.headers?.cookie) {
@@ -54,7 +54,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
               }
             }
           }
-          
+
           // Authorizationヘッダーからも取得可能（オプション）
           if (!token) {
             const authHeader = request?.headers?.authorization;
@@ -62,7 +62,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
               token = authHeader.substring(7);
             }
           }
-          
+
           return token;
         },
       ]),
@@ -100,4 +100,3 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     };
   }
 }
-

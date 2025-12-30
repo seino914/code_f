@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { maskSensitiveData } from '../utils/log-mask.util';
+import { maskSensitiveData } from '../../shared/utils/log-mask.util';
 
 /**
  * グローバル例外フィルター
@@ -100,7 +100,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       timestamp: new Date().toISOString(),
       path: request.url,
       message,
-      requestId: requestId as string,
+      requestId: requestId,
     };
 
     // 開発環境でのみエラー詳細を追加
@@ -111,4 +111,3 @@ export class HttpExceptionFilter implements ExceptionFilter {
     response.status(status).json(responseBody);
   }
 }
-
