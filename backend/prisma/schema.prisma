@@ -14,14 +14,16 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid()) @map("id")
-  name      String   @map("name")
-  email     String   @unique
-  password  String   @map("password")
-  role      String?  @map("role")
-  company   String   @map("company")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                    String   @id @default(uuid()) @map("id")
+  name                  String   @map("name")
+  email                 String   @unique
+  password              String   @map("password")
+  role                  String?  @map("role")
+  company               String   @map("company")
+  failedLoginAttempts   Int      @default(0) @map("failed_login_attempts") // 連続ログイン失敗回数
+  lockedUntil           DateTime? @map("locked_until") // アカウントロック解除時刻
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
 }
 
 model Ingredient {
@@ -78,4 +80,15 @@ enum Category {
   REGULAR    // レギュラー
   SINGLE     // 単品
   LUNCH_BOX  // 弁当
+}
+
+// JWTトークンのブラックリスト（ログアウト時に無効化されたトークンを記録）
+model BlacklistedToken {
+  id        String   @id @default(uuid()) @map("id")
+  token     String   @unique @map("token") // JWTトークン（jtiまたはトークン全体）
+  expiresAt DateTime @map("expires_at") // トークンの有効期限（自動削除用）
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([expiresAt]) // 有効期限でインデックス（自動削除のパフォーマンス向上）
+  @@map("blacklisted_tokens")
 }
