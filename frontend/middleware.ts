@@ -7,11 +7,12 @@ import type { NextRequest } from 'next/server';
  * 
  * 動作：
  * - ログインページ（`/`）以外の全てのパスで認証チェック
- * - 存在しないパス（404になるURL）でも未ログインならログインページにリダイレクト
+ * - 未ログインの場合：存在しないパス（404になるURL）でもログインページにリダイレクト
+ * - ログイン済みの場合：存在しないパス（404になるURL）は404ページを表示（リダイレクトしない）
  * - ログイン済みでログインページにアクセスした場合はダッシュボードにリダイレクト
  */
 export function middleware(request: NextRequest) {
-  // 認証トークン（仮実装：実際はJWTなどを使用）
+  // 認証トークン
   const token = request.cookies.get('auth-token')?.value;
 
   const { pathname } = request.nextUrl;
@@ -25,13 +26,13 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // それ以外の全てのページ（存在しないパスも含む）はログインが必要
+  // 未ログインの場合：全てのパス（存在しないパスも含む）でログインページにリダイレクト
   if (!token) {
-    // ログインしていない場合は404ページではなくログインページにリダイレクト
     return NextResponse.redirect(new URL('/', request.url));
   }
 
-  // ログイン済みの場合は次に進む（存在しないパスは404ページへ）
+  // ログイン済みの場合：全てのパスを通過させる
+  // 存在しないパスはNext.jsが自動的に404ページを表示する
   return NextResponse.next();
 }
 
