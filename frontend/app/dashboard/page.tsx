@@ -1,5 +1,3 @@
-import { DashboardHeader } from './components/DashboardHeader';
-
 /**
  * ダッシュボードページ
  * ログイン後に表示される画面
@@ -8,8 +6,8 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <div className="container mx-auto px-4 py-8">
-        {/* ヘッダー */}
-        <DashboardHeader />
+        {/* ページタイトル */}
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">ダッシュボード</h1>
 
         {/* メインコンテンツ */}
         <main className="space-y-6">
