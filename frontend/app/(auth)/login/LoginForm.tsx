@@ -193,8 +193,19 @@ export function LoginForm() {
             />
           </div>
 
-          <footer className="mt-6 text-center text-[11px] leading-relaxed text-gray-500">
-            ログインすることで、利用規約およびプライバシーポリシーに同意したものとみなされます。
+          <footer className="mt-6 text-center text-sm text-gray-600">
+            <p>
+              アカウントをお持ちでないですか？{' '}
+              <a
+                href="/register"
+                className="font-medium text-sky-600 hover:text-sky-700"
+              >
+                登録
+              </a>
+            </p>
+            <p className="mt-4 text-[11px] leading-relaxed text-gray-500">
+              ログインすることで、利用規約およびプライバシーポリシーに同意したものとみなされます。
+            </p>
           </footer>
         </div>
       </main>
