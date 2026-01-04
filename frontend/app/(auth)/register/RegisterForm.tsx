@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { EmailInput } from '../login/EmailInput';
 import { RegisterPasswordInput } from './RegisterPasswordInput';
 import { NameInput } from './NameInput';
@@ -157,8 +158,15 @@ export function RegisterForm() {
         return;
       }
       
-      // 登録成功後、ログインページにリダイレクト
-      router.push('/login');
+      // 登録成功時のトーストを表示
+      toast.success('登録が完了しました', {
+        description: 'アカウントの作成が成功しました。',
+      });
+      
+      // 少し待ってからログインページにリダイレクト
+      setTimeout(() => {
+        router.push('/login');
+      }, 500);
     } catch (err) {
       // ネットワークエラーなどの場合
       console.error('Register error:', err);
