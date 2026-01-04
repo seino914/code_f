@@ -6,26 +6,32 @@ import type { NextRequest } from 'next/server';
  * ログインしていないユーザーを保護されたページから遮断する
  * 
  * 動作：
- * - ログインページ（`/`）へのアクセスのみ制御
- * - 未ログインでログインページ以外にアクセス → ログインページにリダイレクト
- * - ログイン済みでログインページにアクセス → ダッシュボードにリダイレクト
+ * - 公開ページ（`/` と `/register`）へのアクセス制御
+ * - 未ログインで公開ページ以外にアクセス → ログインページにリダイレクト
+ * - ログイン済みで公開ページにアクセス → ダッシュボードにリダイレクト
  * - ログイン済みで他のページにアクセス → そのまま通過（存在しないページは404表示）
  */
 export function middleware(request: NextRequest) {
   const token = request.cookies.get('auth-token')?.value;
   const { pathname } = request.nextUrl;
 
-  // ログインページ（ルート）へのアクセス
-  if (pathname === '/') {
+  // 公開ページ（ログインページと登録ページ）
+  const publicPaths = ['/', '/register'];
+  const isPublicPath = publicPaths.includes(pathname);
+
+  // 公開ページへのアクセス
+  if (isPublicPath) {
     if (token) {
       // ログイン済みならダッシュボードへ
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+    // 未ログインならそのまま通過
     return NextResponse.next();
   }
 
-  // 未ログインの場合：ログインページにリダイレクト
+  // 公開ページ以外へのアクセス
   if (!token) {
+    // 未ログインの場合：ログインページにリダイレクト
     return NextResponse.redirect(new URL('/', request.url));
   }
 
@@ -38,6 +44,7 @@ export function middleware(request: NextRequest) {
  * 
  * 対象：
  * - `/` : ログインページ（ログイン済みならダッシュボードへリダイレクト）
+ * - `/register` : 登録ページ（ログイン済みならダッシュボードへリダイレクト）
  * - `/dashboard/*` : 保護されたページ（ログイン必須）
  * - その他全てのパス（存在しないパスも含む）: 未ログインならログインページにリダイレクト
  * 
