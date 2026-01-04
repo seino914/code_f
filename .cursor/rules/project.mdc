@@ -11,7 +11,7 @@ alwaysApply: true
 
 ## 技術スタック
 
-- **Frontend**: Next.js 16.1.0 (App Router), React 19.2.3, TypeScript 5, Tailwind CSS 4, ESLint
+- **Frontend**: Next.js 16.1.0 (App Router), React 19.2.3, TypeScript 5, Tailwind CSS 4, ESLint, shadcn/ui
 - **Backend**: NestJS 11.0.1, Prisma 7.2.0, PostgreSQL, Swagger/OpenAPI, TypeScript 5.7.3, Jest
 
 ## ディレクトリ構成（要点）
@@ -39,6 +39,7 @@ alwaysApply: true
 - **NestJS**: 機能単位でモジュール分割、DI を前提に設計
 - **Prisma**: スキーマ変更後は `prisma:migrate` と `prisma:generate` を忘れない
 - **バリデーション**: **zod** を使用する（フロントエンド・バックエンド共通）
+- **UIコンポーネント**: **shadcn/ui** を使用する。コンポーネントの追加は `pnpm dlx shadcn@latest add [component名]` で実行する。設定ファイルは `frontend/components.json`。ユーティリティ関数は `frontend/app/lib/utils/` に配置
 - 複雑なロジックには **日本語コメント**を追加して意図を残す
 - **null を許容しない**:
   - 可能な限り型は `null` ではなく `undefined` / Optional (`?`) / 例外 / Result 型等で表現する
