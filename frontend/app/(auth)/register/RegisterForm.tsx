@@ -2,19 +2,19 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { EmailLoginForm } from './EmailLoginForm';
+import { toast } from 'sonner';
+import { EmailInput } from '../login/EmailInput';
+import { RegisterPasswordInput } from './RegisterPasswordInput';
+import { NameInput } from './NameInput';
+import { CompanyInput } from './CompanyInput';
+import { PasswordConfirmInput } from './PasswordConfirmInput';
+import { registerSchema } from '../../lib/validations/register.schema';
 
 /**
- * ログイン成功時の処理
- * 注意: クッキーはバックエンドでHttpOnlyとして設定されるため、
- * クライアント側での設定は不要（セキュリティ強化）
+ * 登録APIレスポンス型
  */
-
-/**
- * ログインAPIレスポンス型
- */
-interface LoginResponse {
-  accessToken: string;
+interface RegisterResponse {
+  message: string;
   user: {
     id: string;
     name: string;
@@ -24,31 +24,63 @@ interface LoginResponse {
 }
 
 /**
- * ログイン画面コンポーネント
- * メールアドレス/パスワードログインを提供
+ * 登録画面コンポーネント
+ * メールアドレス/パスワード登録を提供
  */
-export function LoginForm() {
+export function RegisterForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
+  
+  // フォームの状態
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [name, setName] = useState('');
+  const [company, setCompany] = useState('');
+  const [formError, setFormError] = useState<string | undefined>();
 
   /**
-   * メールアドレスログイン処理
+   * 登録処理
    */
-  const handleEmailLogin = async (email: string, password: string) => {
-    setIsLoading(true);
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setFormError(undefined);
     setError(undefined);
 
+    // Zodスキーマでフォーム全体をバリデーション
+    const result = registerSchema.safeParse({
+      email,
+      password,
+      passwordConfirm,
+      name,
+      company,
+    });
+
+    if (!result.success) {
+      // 最初のエラーメッセージを表示
+      const firstError = result.error.issues[0];
+      setFormError(firstError?.message);
+      return;
+    }
+
+    setIsLoading(true);
+
     try {
-      const response = await fetch('http://localhost:3001/auth/login', {
+      const response = await fetch('http://localhost:3001/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({
+          email: result.data.email,
+          password: result.data.password,
+          passwordConfirm: result.data.passwordConfirm,
+          name: result.data.name,
+          company: result.data.company,
+        }),
       }).catch((fetchError) => {
-        // fetch自体が失敗した場合（ネットワークエラー、CORSエラーなど）
         console.error('Fetch error:', fetchError);
         throw new Error(
           `ネットワークエラー: ${fetchError instanceof Error ? fetchError.message : '接続に失敗しました'}`,
@@ -64,7 +96,6 @@ export function LoginForm() {
           try {
             errorData = await response.json();
           } catch (parseError) {
-            // JSONパースに失敗した場合
             console.error('Failed to parse error response:', parseError);
             setError(`サーバーエラーが発生しました（ステータス: ${response.status}）。`);
             return;
@@ -92,9 +123,13 @@ export function LoginForm() {
           return;
         }
         
-        // 認証エラー（401）の場合
-        if (response.status === 401) {
-          setError('メールアドレスまたはパスワードが正しくありません。');
+        // 重複エラー（409）の場合
+        if (response.status === 409) {
+          if (typeof errorData.message === 'string') {
+            setError(errorData.message);
+          } else {
+            setError('このメールアドレスは既に登録されています。');
+          }
           return;
         }
         
@@ -102,13 +137,13 @@ export function LoginForm() {
         const errorMessage = 
           (typeof errorData.message === 'string' ? errorData.message : undefined) ||
           (typeof errorData.error === 'string' ? errorData.error : undefined) ||
-          `ログインに失敗しました（ステータス: ${response.status}）。しばらくしてから再度お試しください。`;
+          `登録に失敗しました（ステータス: ${response.status}）。しばらくしてから再度お試しください。`;
         setError(errorMessage);
         return;
       }
 
       // 成功レスポンスをパース
-      let data: LoginResponse;
+      let data: RegisterResponse;
       try {
         data = await response.json();
       } catch (parseError) {
@@ -118,25 +153,25 @@ export function LoginForm() {
       }
       
       // レスポンスデータの検証
-      if (!data || !data.accessToken || !data.user) {
-        setError('ログインに失敗しました。レスポンスデータが不正です。');
+      if (!data || !data.user) {
+        setError('登録に失敗しました。レスポンスデータが不正です。');
         return;
       }
       
-      // クッキーはバックエンドでHttpOnlyとして設定されるため、
-      // クライアント側での設定は不要（セキュリティ強化）
-      // リダイレクト前に少し待機してクッキーが確実に設定されるようにする
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // 登録成功時のトーストを表示
+      toast.success('登録が完了しました', {
+        description: 'アカウントの作成が成功しました。',
+      });
       
-      // ページをリロードしてmiddlewareがクッキーを認識できるようにする
-      router.refresh();
-      router.push('/dashboard');
+      // 少し待ってからログインページにリダイレクト
+      setTimeout(() => {
+        router.push('/login');
+      }, 500);
     } catch (err) {
       // ネットワークエラーなどの場合
-      console.error('Login error:', err);
+      console.error('Register error:', err);
       
       if (err instanceof Error) {
-        // エラーメッセージに基づいて適切なメッセージを表示
         const errorMessage = err.message;
         
         if (
@@ -152,18 +187,11 @@ export function LoginForm() {
           setError(errorMessage);
         }
       } else {
-        setError('ログインに失敗しました。しばらくしてから再度お試しください。');
+        setError('登録に失敗しました。しばらくしてから再度お試しください。');
       }
     } finally {
       setIsLoading(false);
     }
-  };
-
-  /**
-   * パスワード忘れた場合の処理
-   */
-  const handleForgotPassword = () => {
-    console.log('Forgot password clicked');
   };
 
   return (
@@ -172,39 +200,72 @@ export function LoginForm() {
         <div className="rounded-2xl border border-gray-200 bg-white px-6 py-8 shadow-xl sm:px-8 sm:py-10">
           <header className="mb-8 text-center">
             <h1 className="text-2xl font-semibold tracking-tight text-gray-900 sm:text-3xl">
-              ログイン
+              ユーザー登録
             </h1>
             <p className="mt-2 text-sm text-gray-600">
-              メールアドレスでサインインしてください
+              アカウントを作成してください
             </p>
           </header>
 
-          {error && (
+          {(error || formError) && (
             <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
-              {error}
+              {error || formError}
             </div>
           )}
 
-          <div className="space-y-6">
-            <EmailLoginForm
-              onSubmit={handleEmailLogin}
-              onForgotPassword={handleForgotPassword}
-              isLoading={isLoading}
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <NameInput
+              value={name}
+              onChange={setName}
+              onValidationChange={() => {}}
             />
-          </div>
+
+            <CompanyInput
+              value={company}
+              onChange={setCompany}
+              onValidationChange={() => {}}
+            />
+
+            <EmailInput
+              value={email}
+              onChange={setEmail}
+              onValidationChange={() => {}}
+            />
+
+            <RegisterPasswordInput
+              value={password}
+              onChange={setPassword}
+              onValidationChange={() => {}}
+            />
+
+            <PasswordConfirmInput
+              value={passwordConfirm}
+              password={password}
+              onChange={setPasswordConfirm}
+              onValidationChange={() => {}}
+            />
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full rounded-lg bg-sky-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-sky-500/30 transition-colors hover:bg-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {isLoading ? '登録中...' : 'アカウントを作成'}
+            </button>
+          </form>
 
           <footer className="mt-6 text-center text-sm text-gray-600">
             <p>
-              アカウントをお持ちでないですか？{' '}
+              既にアカウントをお持ちですか？{' '}
               <a
-                href="/register"
+                href="/login"
                 className="font-medium text-sky-600 hover:text-sky-700"
               >
-                登録
+                ログイン
               </a>
             </p>
             <p className="mt-4 text-[11px] leading-relaxed text-gray-500">
-              ログインすることで、利用規約およびプライバシーポリシーに同意したものとみなされます。
+              登録することで、利用規約およびプライバシーポリシーに同意したものとみなされます。
             </p>
           </footer>
         </div>

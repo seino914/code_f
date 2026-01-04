@@ -2,12 +2,15 @@ import {
   Injectable,
   UnauthorizedException,
   ForbiddenException,
+  ConflictException,
   Logger,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../database/prisma/prisma.service';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
+import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
+import { checkPasswordStrength } from '../../shared/utils/password-strength.util';
 
 /**
  * 認証サービス
@@ -130,6 +133,63 @@ export class AuthService {
 
     return {
       accessToken,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        company: user.company,
+      },
+    };
+  }
+
+  /**
+   * ユーザー登録
+   * セキュリティ強化:
+   * - パスワード強度チェック
+   * - メールアドレスの重複チェック
+   * - パスワードのハッシュ化
+   * @param registerDto 登録情報
+   * @returns 登録成功メッセージとユーザー情報
+   * @throws ConflictException メールアドレスが既に登録されている場合
+   */
+  async register(registerDto: RegisterDto): Promise<RegisterResponseDto> {
+    // メールアドレスの重複チェック
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: registerDto.email },
+    });
+
+    if (existingUser) {
+      throw new ConflictException('このメールアドレスは既に登録されています');
+    }
+
+    // パスワード強度チェック
+    const passwordStrength = checkPasswordStrength(registerDto.password);
+    if (!passwordStrength.isValid) {
+      throw new ConflictException(
+        `パスワードの強度が不足しています: ${passwordStrength.errors.join(', ')}`,
+      );
+    }
+
+    // パスワードをハッシュ化
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(registerDto.password, saltRounds);
+
+    // ユーザーを作成
+    const user = await this.prisma.user.create({
+      data: {
+        email: registerDto.email,
+        password: hashedPassword,
+        name: registerDto.name,
+        company: registerDto.company,
+        failedLoginAttempts: 0,
+        lockedUntil: null,
+      },
+    });
+
+    this.logger.log(`User registered successfully: ${user.email}`);
+
+    return {
+      message: 'ユーザー登録が完了しました',
       user: {
         id: user.id,
         name: user.name,

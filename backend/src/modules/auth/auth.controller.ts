@@ -19,6 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
+import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
@@ -35,6 +36,39 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly tokenBlacklistService: TokenBlacklistService,
   ) {}
+
+  /**
+   * ユーザー登録
+   * セキュリティ強化:
+   * - レート制限: 1分間に3回まで（スパム登録対策）
+   */
+  @Post('register')
+  @Public()
+  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 1分間に3回まで（スパム登録対策）
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'ユーザー登録' })
+  @ApiResponse({
+    status: 201,
+    description: '登録成功',
+    type: RegisterResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'バリデーションエラー',
+  })
+  @ApiResponse({
+    status: 409,
+    description: 'メールアドレスが既に登録されている',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'リクエストが多すぎます（レート制限）',
+  })
+  async register(
+    @Body() registerDto: RegisterDto,
+  ): Promise<RegisterResponseDto> {
+    return await this.authService.register(registerDto);
+  }
 
   /**
    * メールアドレスとパスワードでログイン
