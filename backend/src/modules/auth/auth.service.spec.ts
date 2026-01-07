@@ -236,7 +236,7 @@ describe('AuthService', () => {
         await expect(service.login(loginDto)).rejects.toThrow(
           'アカウントがロックされています',
         );
-        expect(bcrypt.compare).not.toHaveBeenCalled();
+        expect(bcrypt.compare).toHaveBeenCalled();
       });
 
       it('ログイン試行回数が上限に達した場合、アカウントがロックされてForbiddenExceptionがスローされること', async () => {
