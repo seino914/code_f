@@ -29,7 +29,7 @@ export default function ProfilePage() {
       setError(undefined);
 
       try {
-        const response = await fetch('http://localhost:3001/users/me', {
+        const response = await fetch('http://localhost:3001/users/user', {
           method: 'GET',
           credentials: 'include',
         });
