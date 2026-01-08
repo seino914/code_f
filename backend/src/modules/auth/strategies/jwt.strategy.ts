@@ -25,14 +25,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly tokenBlacklistService: TokenBlacklistService,
   ) {
     // super()を呼ぶ前に環境変数を取得
-    const secret = configService.get<string>('JWT_SECRET');
-    const nodeEnv = configService.get<string>('NODE_ENV');
-
-    if (!secret && nodeEnv === 'production') {
-      throw new Error(
-        'JWT_SECRET環境変数が設定されていません。本番環境では必須です。',
-      );
-    }
+    const secret = configService.get<string>('JWT_SECRET') as string;
 
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -67,7 +60,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         },
       ]),
       ignoreExpiration: false,
-      secretOrKey: secret || 'your-secret-key-change-in-production',
+      secretOrKey: secret,
     });
   }
 

@@ -73,6 +73,10 @@ docker compose up -d
 ```bash
 # backend/.env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/code_f?schema=public"
+JWT_SECRET="your-secret-key-change-in-production"
+FRONTEND_URL="http://localhost:3000"
+PORT=3001
+NODE_ENV="development"
 ```
 
 ### 4. データベースのマイグレーション

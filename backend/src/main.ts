@@ -45,7 +45,7 @@ async function bootstrap() {
 
   // CORSを有効化（フロントエンドからのリクエストを許可）
   // 参考: https://docs.nestjs.com/security/cors
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const frontendUrl = process.env.FRONTEND_URL;
   const isProduction = process.env.NODE_ENV === 'production';
 
   app.enableCors({
