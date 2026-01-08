@@ -1,0 +1,30 @@
+name: Delete Merged Branch
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-branch:
+    runs-on: ubuntu-latest
+    # PRがマージされた場合のみ実行
+    if: github.event.pull_request.merged == true
+    permissions:
+      contents: write
+    steps:
+      - name: Delete branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # デフォルトブランチ（main/master）は削除しない
+          BRANCH_NAME="${{ github.event.pull_request.head.ref }}"
+          DEFAULT_BRANCH="${{ github.event.pull_request.base.ref }}"
+          
+          if [ "$BRANCH_NAME" != "$DEFAULT_BRANCH" ]; then
+            echo "Deleting branch: $BRANCH_NAME"
+            gh api repos/${{ github.repository }}/git/refs/heads/$BRANCH_NAME -X DELETE
+            echo "Branch $BRANCH_NAME has been deleted"
+          else
+            echo "Skipping deletion of default branch: $BRANCH_NAME"
+          fi
+
