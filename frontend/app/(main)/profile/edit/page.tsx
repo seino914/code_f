@@ -3,9 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { NameInput } from '../../../(auth)/register/NameInput';
-import { CompanyInput } from '../../../(auth)/register/CompanyInput';
-import { EmailInput } from '../../../(auth)/login/EmailInput';
+import { NameInput, CompanyInput, EmailInput } from '../../../components/inputForms';
 import { updateUserSchema } from '../../../lib/validations/profile/update-user.schema';
 
 /**

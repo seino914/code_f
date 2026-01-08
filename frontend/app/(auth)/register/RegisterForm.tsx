@@ -3,11 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { EmailInput } from '../login/EmailInput';
-import { RegisterPasswordInput } from './RegisterPasswordInput';
-import { NameInput } from './NameInput';
-import { CompanyInput } from './CompanyInput';
-import { PasswordConfirmInput } from './PasswordConfirmInput';
+import { NameInput, CompanyInput, EmailInput } from '../../components/inputForms';
+import { RegisterPasswordInput } from '../../components/inputForms/RegisterPasswordInput';
+import { PasswordConfirmInput } from '../../components/inputForms/PasswordConfirmInput';
 import { registerSchema } from '../../lib/validations/auth/register.schema';
 
 /**
