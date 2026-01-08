@@ -19,25 +19,4 @@ export function validateEnvironmentVariables() {
         'backend/.envファイルに設定してください。',
     );
   }
-
-  // 本番環境では追加の検証
-  if (process.env.NODE_ENV === 'production') {
-    const productionRequiredVars = ['FRONTEND_URL'];
-
-    for (const envVar of productionRequiredVars) {
-      if (!process.env[envVar]) {
-        throw new Error(
-          `本番環境では以下の環境変数が必須です: ${envVar}\n` +
-            'backend/.envファイルに設定してください。',
-        );
-      }
-    }
-
-    // 本番環境ではJWT_SECRETがデフォルト値でないことを確認
-    if (process.env.JWT_SECRET === 'your-secret-key-change-in-production') {
-      throw new Error(
-        '本番環境ではJWT_SECRETをデフォルト値から変更してください。',
-      );
-    }
-  }
 }

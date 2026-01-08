@@ -21,18 +21,10 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
-        const secret = configService.get<string>('JWT_SECRET');
-        const nodeEnv = configService.get<string>('NODE_ENV');
-
-        // セキュリティ強化: 本番環境ではJWT_SECRETが必須
-        if (!secret && nodeEnv === 'production') {
-          throw new Error(
-            'JWT_SECRET環境変数が設定されていません。本番環境では必須です。',
-          );
-        }
+        const secret = configService.get<string>('JWT_SECRET') as string;
 
         return {
-          secret: secret || 'your-secret-key-change-in-production',
+          secret: secret,
           signOptions: { expiresIn: '24h' },
         };
       },
