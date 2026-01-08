@@ -24,6 +24,8 @@ model User {
   lockedUntil           DateTime? @map("locked_until") // アカウントロック解除時刻
   createdAt             DateTime @default(now()) @map("created_at")
   updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
 }
 
 model Ingredient {
@@ -51,6 +53,8 @@ model Ingredient {
   varianceRate                          Decimal  @map("variance_rate") @db.Decimal(5, 2) // 差異率（パーセンテージ）
   createdAt                             DateTime @default(now()) @map("created_at")
   updatedAt                             DateTime @updatedAt @map("updated_at")
+
+  @@map("ingredients")
 }
 
 model Menu {
@@ -67,6 +71,8 @@ model Menu {
   ingredientCostRate            Decimal  @map("ingredient_cost_rate") @db.Decimal(5, 2) // 食材原価率（パーセンテージ）
   createdAt                     DateTime @default(now()) @map("created_at")
   updatedAt                     DateTime @updatedAt @map("updated_at")
+
+  @@map("menus")
 }
 
 enum Unit {
