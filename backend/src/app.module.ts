@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './database/prisma/prisma.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 
@@ -19,6 +20,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     }),
     PrismaModule,
     AuthModule,
+    UsersModule,
     // レート制限の設定
     // デフォルト: 1分間に60リクエストまで
     ThrottlerModule.forRoot([
