@@ -3,9 +3,9 @@ import {
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
-import { UsersService } from './users.service';
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { UsersService } from '../users.service';
+import { PrismaService } from '../../../database/prisma/prisma.service';
+import { UpdateUserDto } from '../dto/update-user.dto';
 
 describe('UsersService', () => {
   let service: UsersService;

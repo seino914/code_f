@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
-import { UpdateUserDto, UpdateUserResponseDto } from './dto/update-user.dto';
+import { UsersController } from '../users.controller';
+import { UsersService } from '../users.service';
+import { UpdateUserDto, UpdateUserResponseDto } from '../dto/update-user.dto';
 import {
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 describe('UsersController', () => {
   let controller: UsersController;
