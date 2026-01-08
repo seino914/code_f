@@ -6,22 +6,6 @@
 - Next.jsとNestJSを採用したモノレポ構成
 - Turborepoを使用したビルドシステム
 
-## クイックスタート
-
-```bash
-# 1. 依存関係をインストール
-pnpm install
-
-# 2. データベースを起動
-docker compose up -d
-
-# 3. マイグレーションを適用
-pnpm --filter backend prisma:migrate
-
-# 4. 開発サーバーを起動
-pnpm dev
-```
-
 ## ディレクトリ構成
 ```
 code_f/
@@ -68,16 +52,7 @@ docker compose up -d
 
 ### 3. 環境変数の設定
 
-`backend/.env` ファイルが存在しない場合は作成してください：
-
-```bash
-# backend/.env
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/code_f?schema=public"
-JWT_SECRET="your-secret-key-change-in-production"
-FRONTEND_URL="http://localhost:3000"
-PORT=3001
-NODE_ENV="development"
-```
+`backend/.env` ファイルを作成し、[exampleファイル](/backend/.env.example)の内容を追加してください
 
 ### 4. データベースのマイグレーション
 
@@ -95,9 +70,11 @@ pnpm --filter backend prisma:generate
 pnpm dev
 ```
 
----
 
-## Docker コマンド
+## Dockerコマンド
+
+<details>
+<summary><strong>コマンド一覧</strong></summary>
 
 ### 基本操作
 
@@ -141,9 +118,12 @@ docker compose up -d --build
 docker system prune -f
 ```
 
----
+</details>
 
 ## 開発コマンド（ルートで実行）
+
+<details>
+<summary><strong>コマンド一覧</strong></summary>
 
 ### 開発サーバーの起動
 ```bash
@@ -204,3 +184,5 @@ pnpm --filter backend prisma:seed
 ```
 
 **注意**: スキーマ変更後は `prisma:migrate` と `prisma:generate` を実行してください。
+
+</details>
