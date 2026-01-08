@@ -2,15 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { UnauthorizedException, ForbiddenException, ConflictException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { AuthService } from './auth.service';
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { LoginDto } from './dto/login.dto';
-import { RegisterDto } from './dto/register.dto';
-import { checkPasswordStrength } from '../../shared/utils/password-strength.util';
+import { AuthService } from '../auth.service';
+import { PrismaService } from '../../../database/prisma/prisma.service';
+import { LoginDto } from '../dto/login.dto';
+import { RegisterDto } from '../dto/register.dto';
+import { checkPasswordStrength } from '../../../shared/utils/password-strength.util';
 
 // モック関数
 jest.mock('bcrypt');
-jest.mock('../../shared/utils/password-strength.util');
+jest.mock('../../../shared/utils/password-strength.util');
 
 describe('AuthService', () => {
   let service: AuthService;

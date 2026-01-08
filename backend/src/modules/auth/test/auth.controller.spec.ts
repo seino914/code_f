@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpStatus } from '@nestjs/common';
 import { Response, Request } from 'express';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { TokenBlacklistService } from './services/token-blacklist.service';
-import { LoginDto, LoginResponseDto } from './dto/login.dto';
-import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
+import { AuthController } from '../auth.controller';
+import { AuthService } from '../auth.service';
+import { TokenBlacklistService } from '../services/token-blacklist.service';
+import { LoginDto, LoginResponseDto } from '../dto/login.dto';
+import { RegisterDto, RegisterResponseDto } from '../dto/register.dto';
 
 describe('AuthController', () => {
   let controller: AuthController;

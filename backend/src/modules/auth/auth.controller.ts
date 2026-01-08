@@ -2,14 +2,13 @@ import {
   Body,
   Controller,
   Post,
-  Get,
   HttpCode,
   HttpStatus,
   Res,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
@@ -162,30 +161,5 @@ export class AuthController {
     });
 
     return { message: 'ログアウトしました' };
-  }
-
-  /**
-   * 現在のユーザー情報を取得
-   * JWTトークンからユーザー情報を取得
-   */
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: '現在のユーザー情報を取得' })
-  @ApiResponse({
-    status: 200,
-    description: 'ユーザー情報取得成功',
-  })
-  @ApiResponse({
-    status: 401,
-    description: '認証が必要です',
-  })
-  async getMe(@CurrentUser() user: any) {
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      company: user.company,
-    };
   }
 }

@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './modules/auth/auth.module';
+import { UsersModule } from './modules/users/users.module';
 import { PrismaModule } from './database/prisma/prisma.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 
 /**
  * アプリケーションモジュール
- * レート制限をグローバルに適用
+ * レート制限をグローバルに適用（認証済みエンドポイントではスキップ）
  */
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
     }),
     PrismaModule,
     AuthModule,
+    UsersModule,
     // レート制限の設定
     // デフォルト: 1分間に60リクエストまで
     ThrottlerModule.forRoot([
@@ -38,9 +41,10 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
   controllers: [],
   providers: [
     // グローバルガードとしてレート制限を適用
+    // 認証済みエンドポイントではレート制限をスキップ（ログイン周りのみ適用）
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: CustomThrottlerGuard,
     },
     // グローバルガードとしてJWT認証を適用（@Public()デコレータでスキップ可能）
     {

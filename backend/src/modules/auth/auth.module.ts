@@ -46,6 +46,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
     TokenBlacklistService,
     JwtAuthGuard, // ガードもプロバイダーとして登録（DIで使用するため）
   ],
-  exports: [AuthService, TokenBlacklistService],
+  exports: [AuthService, TokenBlacklistService, JwtAuthGuard],
 })
 export class AuthModule {}
