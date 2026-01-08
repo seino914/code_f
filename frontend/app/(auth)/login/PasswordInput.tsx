@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { passwordSchema } from '../../lib/validations/login.schema';
+import { passwordSchema } from '../../lib/validations/auth/login.schema';
 import Link from 'next/link';
 
 interface PasswordInputProps {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useState } from 'react';
-import { emailSchema } from '../../lib/validations/login.schema';
+import { emailSchema } from '../../lib/validations/auth/login.schema';
 
 interface EmailInputProps {
   value: string;

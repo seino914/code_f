@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { EmailInput } from './EmailInput';
 import { PasswordInput } from './PasswordInput';
-import { loginSchema, type LoginFormData } from '../../lib/validations/login.schema';
+import { loginSchema, type LoginFormData } from '../../lib/validations/auth/login.schema';
 
 interface EmailLoginFormProps {
   onSubmit: (email: string, password: string) => void | Promise<void>;

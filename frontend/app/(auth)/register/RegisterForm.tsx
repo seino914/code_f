@@ -8,7 +8,7 @@ import { RegisterPasswordInput } from './RegisterPasswordInput';
 import { NameInput } from './NameInput';
 import { CompanyInput } from './CompanyInput';
 import { PasswordConfirmInput } from './PasswordConfirmInput';
-import { registerSchema } from '../../lib/validations/register.schema';
+import { registerSchema } from '../../lib/validations/auth/register.schema';
 
 /**
  * 登録APIレスポンス型
