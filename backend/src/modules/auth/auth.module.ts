@@ -4,14 +4,32 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from '../../database/prisma/prisma.module';
 import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { TokenBlacklistService } from './services/token-blacklist.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+
+// Domain層
+import { USER_REPOSITORY } from '../../domain/repositories/user.repository.interface';
+import { TOKEN_REPOSITORY } from '../../domain/repositories/token.repository.interface';
+import { PASSWORD_SERVICE } from '../../domain/services/password.service.interface';
+import { JWT_SERVICE } from '../../domain/services/jwt.service.interface';
+
+// Infrastructure層
+import { PrismaUserRepository } from '../../infrastructure/repositories/prisma-user.repository';
+import { PrismaTokenRepository } from '../../infrastructure/repositories/prisma-token.repository';
+import { BcryptPasswordService } from '../../infrastructure/services/bcrypt-password.service';
+import { NestJsJwtService } from '../../infrastructure/services/nestjs-jwt.service';
+
+// Application層
+import {
+  LoginUseCase,
+  RegisterUseCase,
+  LogoutUseCase,
+} from '../../application/usecases/auth';
 
 /**
  * 認証モジュール
  * JWT認証とログイン機能を提供
+ * クリーンアーキテクチャに基づいた依存性注入を設定
  */
 @Module({
   imports: [
@@ -22,7 +40,6 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
         const secret = configService.get<string>('JWT_SECRET') as string;
-
         return {
           secret: secret,
           signOptions: { expiresIn: '24h' },
@@ -33,11 +50,39 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
   ],
   controllers: [AuthController],
   providers: [
-    AuthService,
+    // リポジトリの実装をインターフェースにバインド
+    {
+      provide: USER_REPOSITORY,
+      useClass: PrismaUserRepository,
+    },
+    {
+      provide: TOKEN_REPOSITORY,
+      useClass: PrismaTokenRepository,
+    },
+    // サービスの実装をインターフェースにバインド
+    {
+      provide: PASSWORD_SERVICE,
+      useClass: BcryptPasswordService,
+    },
+    {
+      provide: JWT_SERVICE,
+      useClass: NestJsJwtService,
+    },
+    // ユースケース
+    LoginUseCase,
+    RegisterUseCase,
+    LogoutUseCase,
+    // 認証関連
     JwtStrategy,
-    TokenBlacklistService,
-    JwtAuthGuard, // ガードもプロバイダーとして登録（DIで使用するため）
+    JwtAuthGuard,
   ],
-  exports: [AuthService, TokenBlacklistService, JwtAuthGuard],
+  exports: [
+    // リポジトリとサービスをエクスポート（他モジュールで使用可能に）
+    USER_REPOSITORY,
+    TOKEN_REPOSITORY,
+    PASSWORD_SERVICE,
+    JWT_SERVICE,
+    JwtAuthGuard,
+  ],
 })
 export class AuthModule {}

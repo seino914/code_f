@@ -2,24 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-/**
- * ユーザー情報の型定義
- */
-interface UserInfo {
-  id: string;
-  name: string;
-  email: string;
-  company: string;
-}
+import { container } from '../../infrastructure/di/container';
+import type { User } from '../../domain/entities/user.entity';
 
 /**
  * プロフィールページ
  * ユーザー情報を表示・編集する
+ * クリーンアーキテクチャに基づき、ユースケースを使用
  */
 export default function ProfilePage() {
   const router = useRouter();
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [userInfo, setUserInfo] = useState<User | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -29,22 +22,20 @@ export default function ProfilePage() {
       setError(undefined);
 
       try {
-        const response = await fetch('http://localhost:3001/users/user', {
-          method: 'GET',
-          credentials: 'include',
-        });
+        // ユースケースを使用してユーザー情報を取得
+        const result = await container.getUserUseCase.execute();
 
-        if (!response.ok) {
-          if (response.status === 401) {
+        if (!result.success) {
+          // 認証エラーの場合はログインページにリダイレクト
+          if (result.error.includes('認証') || result.error.includes('401')) {
             router.push('/login');
             return;
           }
-          setError('ユーザー情報の取得に失敗しました。');
+          setError(result.error);
           return;
         }
 
-        const data = await response.json();
-        setUserInfo(data);
+        setUserInfo(result.data);
       } catch (err) {
         console.error('Fetch user info error:', err);
         setError('ユーザー情報の取得に失敗しました。');
@@ -128,4 +119,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-

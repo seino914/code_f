@@ -44,4 +44,3 @@ const UpdateUserResponseSchema = z.object({
 export class UpdateUserResponseDto extends createZodDto(
   UpdateUserResponseSchema,
 ) {}
-

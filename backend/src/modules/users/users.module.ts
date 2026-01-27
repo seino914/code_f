@@ -1,18 +1,29 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '../../database/prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
 import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+
+// Application層
+import {
+  GetUserUseCase,
+  UpdateUserUseCase,
+} from '../../application/usecases/users';
+
+// Domain層
+import { USER_REPOSITORY } from '../../domain/repositories/user.repository.interface';
 
 /**
  * ユーザーモジュール
  * ユーザー情報管理機能を提供
+ * クリーンアーキテクチャに基づいた依存性注入を設定
  */
 @Module({
-  imports: [PrismaModule, AuthModule],
+  imports: [AuthModule], // AuthModuleからリポジトリをインポート
   controllers: [UsersController],
-  providers: [UsersService],
-  exports: [UsersService],
+  providers: [
+    // ユースケース
+    GetUserUseCase,
+    UpdateUserUseCase,
+  ],
+  exports: [GetUserUseCase, UpdateUserUseCase],
 })
 export class UsersModule {}
-

@@ -22,12 +22,11 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     // リクエストURLを取得（クエリパラメータを除く）
     const url = request.url?.split('?')[0] || '';
     const path = request.path || url;
-    
+
     // ログイン周りのエンドポイントのみレート制限を適用
     // /auth/login のみチェック
-    const isLoginEndpoint = 
-      path === '/auth/login' || 
-      path.startsWith('/auth/login');
+    const isLoginEndpoint =
+      path === '/auth/login' || path.startsWith('/auth/login');
     if (!isLoginEndpoint) {
       // ログイン周り以外はレート制限をスキップ
       return true;
@@ -37,4 +36,3 @@ export class CustomThrottlerGuard extends ThrottlerGuard {
     return super.canActivate(context);
   }
 }
-
