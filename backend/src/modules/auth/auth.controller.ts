@@ -7,8 +7,11 @@ import {
   Res,
   Req,
   UseGuards,
+  UnauthorizedException,
+  ForbiddenException,
+  ConflictException,
 } from '@nestjs/common';
-import type { Request, Response } from 'express';
+import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import {
   ApiTags,
@@ -16,24 +19,29 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
 import { Public } from './decorators/public.decorator';
-import { TokenBlacklistService } from './services/token-blacklist.service';
+import {
+  LoginUseCase,
+  RegisterUseCase,
+  LogoutUseCase,
+} from '../../application/usecases/auth';
 
 /**
  * 認証コントローラー
  * ログインなどの認証関連のエンドポイントを提供
+ * ユースケースに処理を委譲し、HTTPレスポンスの変換を担当
  */
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(
-    private readonly authService: AuthService,
-    private readonly tokenBlacklistService: TokenBlacklistService,
+    private readonly loginUseCase: LoginUseCase,
+    private readonly registerUseCase: RegisterUseCase,
+    private readonly logoutUseCase: LogoutUseCase,
   ) {}
 
   /**
@@ -43,7 +51,7 @@ export class AuthController {
    */
   @Post('register')
   @Public()
-  @Throttle({ default: { limit: 3, ttl: 60000 } }) // 1分間に3回まで（スパム登録対策）
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'ユーザー登録' })
   @ApiResponse({
@@ -66,7 +74,24 @@ export class AuthController {
   async register(
     @Body() registerDto: RegisterDto,
   ): Promise<RegisterResponseDto> {
-    return await this.authService.register(registerDto);
+    const result = await this.registerUseCase.execute({
+      email: registerDto.email,
+      password: registerDto.password,
+      name: registerDto.name,
+      company: registerDto.company,
+    });
+
+    if (!result.success) {
+      // エラータイプに応じて適切な例外をスロー
+      switch (result.error.type) {
+        case 'EMAIL_ALREADY_EXISTS':
+          throw new ConflictException(result.error.message);
+        case 'WEAK_PASSWORD':
+          throw new ConflictException(result.error.message);
+      }
+    }
+
+    return result.data;
   }
 
   /**
@@ -77,7 +102,7 @@ export class AuthController {
    */
   @Post('login')
   @Public()
-  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 1分間に5回まで（ブルートフォース攻撃対策）
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'メールアドレスとパスワードでログイン' })
   @ApiResponse({
@@ -97,22 +122,32 @@ export class AuthController {
     @Body() loginDto: LoginDto,
     @Res({ passthrough: true }) response: Response,
   ): Promise<LoginResponseDto> {
-    const result = await this.authService.login(loginDto);
+    const result = await this.loginUseCase.execute({
+      email: loginDto.email,
+      password: loginDto.password,
+    });
+
+    if (!result.success) {
+      // エラータイプに応じて適切な例外をスロー
+      switch (result.error.type) {
+        case 'INVALID_CREDENTIALS':
+          throw new UnauthorizedException(result.error.message);
+        case 'ACCOUNT_LOCKED':
+          throw new ForbiddenException(result.error.message);
+      }
+    }
 
     // セキュリティ強化: クッキーをHttpOnly、Secure、SameSiteで設定
-    // HttpOnly: JavaScriptからアクセス不可（XSS攻撃対策）
-    // Secure: HTTPS接続時のみ送信（本番環境で必須）
-    // SameSite=Lax: CSRF攻撃対策
     const isProduction = process.env.NODE_ENV === 'production';
-    response.cookie('auth-token', result.accessToken, {
-      httpOnly: true, // JavaScriptからアクセス不可（XSS攻撃対策）
-      secure: isProduction, // 本番環境ではHTTPS必須
-      sameSite: 'lax', // CSRF攻撃対策
+    response.cookie('auth-token', result.data.accessToken, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: 'lax',
       maxAge: 24 * 60 * 60 * 1000, // 24時間
       path: '/',
     });
 
-    return result;
+    return result.data;
   }
 
   /**
@@ -133,12 +168,16 @@ export class AuthController {
     description: '認証が必要です',
   })
   async logout(
-    @CurrentUser() user: any,
+    @CurrentUser() _user: { id: string; email: string },
     @Res({ passthrough: true }) response: Response,
-    @Req() request: any,
+    @Req()
+    request: {
+      cookies?: Record<string, string>;
+      headers?: { authorization?: string };
+    },
   ) {
     // トークンを取得（クッキーまたはAuthorizationヘッダーから）
-    let token: string | null = null;
+    let token: string | undefined;
     if (request?.cookies?.['auth-token']) {
       token = request.cookies['auth-token'];
     } else if (request?.headers?.authorization?.startsWith('Bearer ')) {
@@ -147,7 +186,7 @@ export class AuthController {
 
     // トークンをブラックリストに追加（無効化）
     if (token) {
-      await this.tokenBlacklistService.addToBlacklist(token);
+      await this.logoutUseCase.execute({ token });
     }
 
     // クッキーを削除

@@ -5,32 +5,17 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { NameInput, CompanyInput, EmailInput } from '../../../components/inputForms';
 import { updateUserSchema } from '../../../lib/validations/profile/update-user.schema';
-
-/**
- * ユーザー情報の型定義
- */
-interface UserInfo {
-  id: string;
-  name: string;
-  email: string;
-  company: string;
-}
-
-/**
- * 更新APIレスポンス型
- */
-interface UpdateUserResponse {
-  message: string;
-  user: UserInfo;
-}
+import { container } from '../../../infrastructure/di/container';
+import type { User } from '../../../domain/entities/user.entity';
 
 /**
  * プロフィール編集ページ
  * ユーザー情報を編集する
+ * クリーンアーキテクチャに基づき、ユースケースを使用
  */
 export default function ProfileEditPage() {
   const router = useRouter();
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [userInfo, setUserInfo] = useState<User | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
@@ -47,25 +32,23 @@ export default function ProfileEditPage() {
       setError(undefined);
 
       try {
-        const response = await fetch('http://localhost:3001/users/user', {
-          method: 'GET',
-          credentials: 'include',
-        });
+        // ユースケースを使用してユーザー情報を取得
+        const result = await container.getUserUseCase.execute();
 
-        if (!response.ok) {
-          if (response.status === 401) {
+        if (!result.success) {
+          // 認証エラーの場合はログインページにリダイレクト
+          if (result.error.includes('認証') || result.error.includes('401')) {
             router.push('/login');
             return;
           }
-          setError('ユーザー情報の取得に失敗しました。');
+          setError(result.error);
           return;
         }
 
-        const data = await response.json();
-        setUserInfo(data);
-        setName(data.name);
-        setCompany(data.company);
-        setEmail(data.email);
+        setUserInfo(result.data);
+        setName(result.data.name);
+        setCompany(result.data.company);
+        setEmail(result.data.email);
       } catch (err) {
         console.error('Fetch user info error:', err);
         setError('ユーザー情報の取得に失敗しました。');
@@ -86,14 +69,14 @@ export default function ProfileEditPage() {
     setError(undefined);
 
     // Zodスキーマでフォーム全体をバリデーション
-    const result = updateUserSchema.safeParse({
+    const validationResult = updateUserSchema.safeParse({
       name,
       company,
       email,
     });
 
-    if (!result.success) {
-      const firstError = result.error.issues[0];
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0];
       setFormError(firstError?.message);
       return;
     }
@@ -101,47 +84,22 @@ export default function ProfileEditPage() {
     setIsSaving(true);
 
     try {
-      const response = await fetch('http://localhost:3001/users/update', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          name: result.data.name,
-          company: result.data.company,
-          email: result.data.email,
-        }),
+      // ユースケースを使用してユーザー情報を更新
+      const result = await container.updateUserUseCase.execute({
+        name: validationResult.data.name,
+        company: validationResult.data.company,
+        email: validationResult.data.email,
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
+      if (!result.success) {
+        // 認証エラーの場合はログインページにリダイレクト
+        if (result.error.includes('認証') || result.error.includes('401')) {
           router.push('/login');
           return;
         }
-
-        let errorData: { message?: string; error?: string } = {};
-        const contentType = response.headers.get('content-type');
-
-        if (contentType && contentType.includes('application/json')) {
-          try {
-            errorData = await response.json();
-          } catch (parseError) {
-            console.error('Failed to parse error response:', parseError);
-          }
-        }
-
-        const errorMessage =
-          (typeof errorData.message === 'string'
-            ? errorData.message
-            : undefined) ||
-          (typeof errorData.error === 'string' ? errorData.error : undefined) ||
-          'ユーザー情報の更新に失敗しました。';
-        setError(errorMessage);
+        setError(result.error);
         return;
       }
-
-      const data: UpdateUserResponse = await response.json();
 
       toast.success('更新が完了しました', {
         description: 'ユーザー情報を更新しました。',
@@ -249,4 +207,3 @@ export default function ProfileEditPage() {
     </div>
   );
 }
-

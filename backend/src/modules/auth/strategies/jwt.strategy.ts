@@ -1,9 +1,16 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Inject, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { PrismaService } from '../../../database/prisma/prisma.service';
-import { TokenBlacklistService } from '../services/token-blacklist.service';
+import {
+  IUserRepository,
+  USER_REPOSITORY,
+} from '../../../domain/repositories/user.repository.interface';
+import {
+  ITokenRepository,
+  TOKEN_REPOSITORY,
+} from '../../../domain/repositories/token.repository.interface';
+import { toUserPublicInfo } from '../../../domain/entities/user.entity';
 
 /**
  * JWTペイロードの型
@@ -20,9 +27,11 @@ export interface JwtPayload {
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private readonly prisma: PrismaService,
+    @Inject(USER_REPOSITORY)
+    private readonly userRepository: IUserRepository,
+    @Inject(TOKEN_REPOSITORY)
+    private readonly tokenRepository: ITokenRepository,
     private readonly configService: ConfigService,
-    private readonly tokenBlacklistService: TokenBlacklistService,
   ) {
     // super()を呼ぶ前に環境変数を取得
     const secret = configService.get<string>('JWT_SECRET') as string;
@@ -30,8 +39,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         // クッキーからトークンを取得
-        (request: any) => {
-          // Expressのrequestオブジェクトからクッキーを取得
+        (request: {
+          cookies?: Record<string, string>;
+          headers?: { cookie?: string; authorization?: string };
+        }) => {
           let token: string | null = null;
 
           if (request?.cookies?.['auth-token']) {
@@ -61,35 +72,45 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       ]),
       ignoreExpiration: false,
       secretOrKey: secret,
+      passReqToCallback: true, // リクエストオブジェクトをコールバックに渡す
     });
   }
 
   /**
    * JWTペイロードを検証し、ユーザー情報を返す
+   * @param request リクエストオブジェクト
    * @param payload JWTペイロード
    * @returns ユーザー情報
    */
-  async validate(payload: JwtPayload) {
-    // トークンがブラックリストに含まれているかチェック
-    // 注意: この時点ではトークン全体にアクセスできないため、
-    // トークンのハッシュまたはjti（JWT ID）を使用する必要がある
-    // 現在の実装では、validateメソッド内でトークンにアクセスできないため、
-    // ガードレベルでチェックする必要がある
+  async validate(
+    request: {
+      cookies?: Record<string, string>;
+      headers?: { authorization?: string };
+    },
+    payload: JwtPayload,
+  ) {
+    // トークンを取得してブラックリストチェック
+    let token: string | undefined;
+    if (request?.cookies?.['auth-token']) {
+      token = request.cookies['auth-token'];
+    } else if (request?.headers?.authorization?.startsWith('Bearer ')) {
+      token = request.headers.authorization.substring(7);
+    }
+
+    if (token) {
+      const isBlacklisted = await this.tokenRepository.isBlacklisted(token);
+      if (isBlacklisted) {
+        throw new UnauthorizedException('トークンは無効化されています');
+      }
+    }
 
     // ユーザーが存在するか確認
-    const user = await this.prisma.user.findUnique({
-      where: { id: payload.sub },
-    });
+    const user = await this.userRepository.findById(payload.sub);
 
     if (!user) {
       throw new UnauthorizedException('ユーザーが見つかりません');
     }
 
-    return {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      company: user.company,
-    };
+    return toUserPublicInfo(user);
   }
 }
