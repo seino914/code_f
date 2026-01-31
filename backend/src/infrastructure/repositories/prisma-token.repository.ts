@@ -34,9 +34,14 @@ export class PrismaTokenRepository implements ITokenRepository {
   async addToBlacklist(
     input: CreateBlacklistedTokenInput,
   ): Promise<BlacklistedToken> {
-    const token = await this.prisma.blacklistedToken.create({
-      data: {
+    // 重複を許容するため、upsertを使用してidempotentに処理
+    const token = await this.prisma.blacklistedToken.upsert({
+      where: { token: input.token },
+      create: {
         token: input.token,
+        expiresAt: input.expiresAt,
+      },
+      update: {
         expiresAt: input.expiresAt,
       },
     });

@@ -86,20 +86,45 @@ export class UpdateUserUseCase {
     }
 
     // ユーザー情報を更新
-    const updatedUser = await this.userRepository.update(input.userId, {
-      name: input.name,
-      company: input.company,
-      email: input.email,
-    });
+    try {
+      const updatedUser = await this.userRepository.update(input.userId, {
+        name: input.name,
+        company: input.company,
+        email: input.email,
+      });
 
-    this.logger.log(`User updated successfully: ${updatedUser.email}`);
+      this.logger.log(`User updated successfully: ${updatedUser.email}`);
 
-    return {
-      success: true,
-      data: {
-        message: 'ユーザー情報を更新しました',
-        user: toUserPublicInfo(updatedUser),
-      },
-    };
+      return {
+        success: true,
+        data: {
+          message: 'ユーザー情報を更新しました',
+          user: toUserPublicInfo(updatedUser),
+        },
+      };
+    } catch (error) {
+      // Prismaのユニーク制約エラーをキャッチ（TOCTOU対策）
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'P2002'
+      ) {
+        return {
+          success: false,
+          error: {
+            type: 'EMAIL_ALREADY_EXISTS',
+            message: 'このメールアドレスは既に登録されています',
+          },
+        };
+      }
+
+      // その他のエラーは再スロー
+      this.logger.error(
+        `Failed to update user: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
+      throw error;
+    }
   }
 }

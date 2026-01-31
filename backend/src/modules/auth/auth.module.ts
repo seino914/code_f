@@ -77,11 +77,7 @@ import {
     JwtAuthGuard,
   ],
   exports: [
-    // リポジトリとサービスをエクスポート（他モジュールで使用可能に）
-    USER_REPOSITORY,
-    TOKEN_REPOSITORY,
-    PASSWORD_SERVICE,
-    JWT_SERVICE,
+    // JwtAuthGuardのみエクスポート（他モジュールで使用可能に）
     JwtAuthGuard,
   ],
 })

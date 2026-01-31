@@ -58,7 +58,6 @@ export function RegisterForm() {
       const result = await container.registerUseCase.execute({
         email: validationResult.data.email,
         password: validationResult.data.password,
-        passwordConfirm: validationResult.data.passwordConfirm,
         name: validationResult.data.name,
         company: validationResult.data.company,
       });

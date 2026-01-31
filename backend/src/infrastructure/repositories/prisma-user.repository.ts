@@ -84,16 +84,29 @@ export class PrismaUserRepository implements IUserRepository {
   }
 
   async update(id: string, input: UpdateUserInput): Promise<User> {
-    const user = await this.prisma.user.update({
-      where: { id },
-      data: {
-        name: input.name,
-        company: input.company,
-        email: input.email,
-      },
-    });
+    try {
+      const user = await this.prisma.user.update({
+        where: { id },
+        data: {
+          name: input.name,
+          company: input.company,
+          email: input.email,
+        },
+      });
 
-    return this.toEntity(user);
+      return this.toEntity(user);
+    } catch (error) {
+      // Prismaの「レコードが見つからない」エラーをキャッチ
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'P2025'
+      ) {
+        throw new Error('ユーザーが見つかりません');
+      }
+      throw error;
+    }
   }
 
   async updateLoginAttempts(
@@ -101,26 +114,52 @@ export class PrismaUserRepository implements IUserRepository {
     failedAttempts: number,
     lockedUntil: Date | null,
   ): Promise<User> {
-    const user = await this.prisma.user.update({
-      where: { id },
-      data: {
-        failedLoginAttempts: failedAttempts,
-        lockedUntil,
-      },
-    });
+    try {
+      const user = await this.prisma.user.update({
+        where: { id },
+        data: {
+          failedLoginAttempts: failedAttempts,
+          lockedUntil,
+        },
+      });
 
-    return this.toEntity(user);
+      return this.toEntity(user);
+    } catch (error) {
+      // Prismaの「レコードが見つからない」エラーをキャッチ
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'P2025'
+      ) {
+        throw new Error('ユーザーが見つかりません');
+      }
+      throw error;
+    }
   }
 
   async resetLoginAttempts(id: string): Promise<User> {
-    const user = await this.prisma.user.update({
-      where: { id },
-      data: {
-        failedLoginAttempts: 0,
-        lockedUntil: null,
-      },
-    });
+    try {
+      const user = await this.prisma.user.update({
+        where: { id },
+        data: {
+          failedLoginAttempts: 0,
+          lockedUntil: null,
+        },
+      });
 
-    return this.toEntity(user);
+      return this.toEntity(user);
+    } catch (error) {
+      // Prismaの「レコードが見つからない」エラーをキャッチ
+      if (
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        error.code === 'P2025'
+      ) {
+        throw new Error('ユーザーが見つかりません');
+      }
+      throw error;
+    }
   }
 }

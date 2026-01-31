@@ -10,6 +10,7 @@ import {
   UnauthorizedException,
   ForbiddenException,
   ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { Throttle } from '@nestjs/throttler';
@@ -88,6 +89,12 @@ export class AuthController {
           throw new ConflictException(result.error.message);
         case 'WEAK_PASSWORD':
           throw new ConflictException(result.error.message);
+        default: {
+          const error = result.error as { message?: string };
+          throw new InternalServerErrorException(
+            error.message || '登録に失敗しました',
+          );
+        }
       }
     }
 
@@ -134,6 +141,12 @@ export class AuthController {
           throw new UnauthorizedException(result.error.message);
         case 'ACCOUNT_LOCKED':
           throw new ForbiddenException(result.error.message);
+        default: {
+          const error = result.error as { message?: string };
+          throw new InternalServerErrorException(
+            error.message || 'ログインに失敗しました',
+          );
+        }
       }
     }
 

@@ -92,7 +92,7 @@ export class ApiClient {
       // レスポンスが空の場合
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        return {} as T;
+        throw new Error('Empty or non-JSON response');
       }
 
       return response.json();

@@ -31,7 +31,6 @@ export interface LoginResult {
 export interface RegisterInput {
   email: string;
   password: string;
-  passwordConfirm: string;
   name: string;
   company: string;
 }

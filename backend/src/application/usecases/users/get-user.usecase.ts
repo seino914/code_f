@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import {
   IUserRepository,
   USER_REPOSITORY,
@@ -25,7 +25,9 @@ export type GetUserResult =
 /**
  * ユーザー取得エラータイプ
  */
-export type GetUserError = { type: 'USER_NOT_FOUND'; message: string };
+export type GetUserError =
+  | { type: 'USER_NOT_FOUND'; message: string }
+  | { type: 'INTERNAL_ERROR'; message: string };
 
 /**
  * ユーザー情報取得ユースケース
@@ -33,6 +35,8 @@ export type GetUserError = { type: 'USER_NOT_FOUND'; message: string };
  */
 @Injectable()
 export class GetUserUseCase {
+  private readonly logger = new Logger(GetUserUseCase.name);
+
   constructor(
     @Inject(USER_REPOSITORY)
     private readonly userRepository: IUserRepository,
@@ -44,21 +48,35 @@ export class GetUserUseCase {
    * @returns ユーザー取得結果
    */
   async execute(input: GetUserInput): Promise<GetUserResult> {
-    const user = await this.userRepository.findById(input.userId);
+    try {
+      const user = await this.userRepository.findById(input.userId);
 
-    if (!user) {
+      if (!user) {
+        return {
+          success: false,
+          error: {
+            type: 'USER_NOT_FOUND',
+            message: 'ユーザーが見つかりません',
+          },
+        };
+      }
+
+      return {
+        success: true,
+        data: toUserPublicInfo(user),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to get user: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        error instanceof Error ? error.stack : undefined,
+      );
       return {
         success: false,
         error: {
-          type: 'USER_NOT_FOUND',
-          message: 'ユーザーが見つかりません',
+          type: 'INTERNAL_ERROR',
+          message: 'ユーザー情報の取得に失敗しました',
         },
       };
     }
-
-    return {
-      success: true,
-      data: toUserPublicInfo(user),
-    };
   }
 }

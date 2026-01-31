@@ -6,6 +6,8 @@ import {
   UseGuards,
   UnauthorizedException,
   ConflictException,
+  InternalServerErrorException,
+  Logger,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -29,6 +31,8 @@ import {
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
+  private readonly logger = new Logger(UsersController.name);
+
   constructor(
     private readonly getUserUseCase: GetUserUseCase,
     private readonly updateUserUseCase: UpdateUserUseCase,
@@ -101,6 +105,13 @@ export class UsersController {
           throw new UnauthorizedException(result.error.message);
         case 'EMAIL_ALREADY_EXISTS':
           throw new ConflictException(result.error.message);
+        default: {
+          this.logger.error('Unexpected error type in updateUser', result.error);
+          const error = result.error as { message?: string };
+          throw new InternalServerErrorException(
+            error.message || 'ユーザー情報の更新に失敗しました',
+          );
+        }
       }
     }
 
