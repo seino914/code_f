@@ -45,7 +45,7 @@ export function CompanyInput({
       if (error) {
         setError(undefined);
       }
-      
+
       // リアルタイムバリデーション（空でない場合のみ）
       if (newValue.length > 0) {
         const validationError = validateCompany(newValue);
@@ -95,11 +95,14 @@ export function CompanyInput({
         aria-describedby={error ? 'company-error' : undefined}
       />
       {error && (
-        <p id="company-error" className="mt-1 text-xs text-red-600" role="alert">
+        <p
+          id="company-error"
+          className="mt-1 text-xs text-red-600"
+          role="alert"
+        >
           {error}
         </p>
       )}
     </div>
   );
 }
-

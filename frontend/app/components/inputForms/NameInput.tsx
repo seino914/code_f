@@ -45,7 +45,7 @@ export function NameInput({
       if (error) {
         setError(undefined);
       }
-      
+
       // リアルタイムバリデーション（空でない場合のみ）
       if (newValue.length > 0) {
         const validationError = validateName(newValue);
@@ -74,10 +74,7 @@ export function NameInput({
 
   return (
     <div className="space-y-1.5">
-      <label
-        htmlFor="name"
-        className="block text-sm font-medium text-gray-700"
-      >
+      <label htmlFor="name" className="block text-sm font-medium text-gray-700">
         名前
       </label>
       <input
@@ -102,4 +99,3 @@ export function NameInput({
     </div>
   );
 }
-

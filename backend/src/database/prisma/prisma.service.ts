@@ -22,7 +22,7 @@ export class PrismaService
 
     if (!databaseUrl) {
       throw new Error(
-        'DATABASE_URL環境変数が設定されていません。backend/.envファイルにDATABASE_URLを設定してください。',
+        'DATABASE_URL環境変数が設定されていません。backend/.envファイルにDATABASE_URLを設定してください。'
       );
     }
 
@@ -31,13 +31,13 @@ export class PrismaService
       const url = new URL(databaseUrl);
       if (url.protocol !== 'postgresql:' && url.protocol !== 'postgres:') {
         throw new Error(
-          `DATABASE_URLのプロトコルが正しくありません: ${url.protocol}`,
+          `DATABASE_URLのプロトコルが正しくありません: ${url.protocol}`
         );
       }
     } catch (error) {
       if (error instanceof TypeError) {
         throw new Error(
-          `DATABASE_URLの形式が正しくありません。形式: postgresql://username:password@host:port/database`,
+          `DATABASE_URLの形式が正しくありません。形式: postgresql://username:password@host:port/database`
         );
       }
       throw error;

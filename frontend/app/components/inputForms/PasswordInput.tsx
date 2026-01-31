@@ -35,14 +35,14 @@ export function PasswordInput({
 }: PasswordInputProps) {
   const [error, setError] = useState<string | undefined>();
   const [internalValue, setInternalValue] = useState('');
-  
+
   // 制御された値（親から渡される）または内部の値を使用
   const value = controlledValue !== undefined ? controlledValue : internalValue;
 
   const handleChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const newValue = event.target.value;
-      
+
       // 親コンポーネントに値を通知
       if (onChange) {
         onChange(newValue);
@@ -54,7 +54,7 @@ export function PasswordInput({
       if (error) {
         setError(undefined);
       }
-      
+
       // リアルタイムバリデーション（空でない場合のみ）
       if (newValue.length > 0) {
         const validationError = validatePassword(newValue);
@@ -105,16 +105,22 @@ export function PasswordInput({
         aria-describedby={error ? 'password-error' : undefined}
       />
       {error && (
-        <p id="password-error" className="mt-1 text-xs text-red-600" role="alert">
+        <p
+          id="password-error"
+          className="mt-1 text-xs text-red-600"
+          role="alert"
+        >
           {error}
         </p>
       )}
       <div className="flex items-center justify-end">
-        <Link href="/password-reset" className="text-xs text-sky-600 hover:text-sky-700 block">
+        <Link
+          href="/password-reset"
+          className="text-xs text-sky-600 hover:text-sky-700 block"
+        >
           パスワードをお忘れですか？
         </Link>
       </div>
     </div>
   );
 }
-

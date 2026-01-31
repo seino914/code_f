@@ -90,7 +90,7 @@ describe('AuthController', () => {
             sameSite: 'lax',
             maxAge: 24 * 60 * 60 * 1000,
             path: '/',
-          },
+          }
         );
 
         process.env.NODE_ENV = originalEnv;
@@ -116,7 +116,7 @@ describe('AuthController', () => {
             sameSite: 'lax',
             maxAge: 24 * 60 * 60 * 1000,
             path: '/',
-          },
+          }
         );
 
         process.env.NODE_ENV = originalEnv;
@@ -130,9 +130,9 @@ describe('AuthController', () => {
         authService.login.mockRejectedValue(error);
 
         // Act & Assert
-        await expect(
-          controller.login(loginDto, mockResponse),
-        ).rejects.toThrow('認証失敗');
+        await expect(controller.login(loginDto, mockResponse)).rejects.toThrow(
+          '認証失敗'
+        );
         expect(mockResponse.cookie).not.toHaveBeenCalled();
       });
     });
@@ -174,7 +174,7 @@ describe('AuthController', () => {
 
         // Act & Assert
         await expect(controller.register(registerDto)).rejects.toThrow(
-          '登録失敗',
+          '登録失敗'
         );
       });
     });
@@ -203,13 +203,13 @@ describe('AuthController', () => {
         const result = await controller.logout(
           mockUserFromToken,
           mockResponse,
-          requestWithCookie,
+          requestWithCookie
         );
 
         // Assert
         expect(result).toEqual({ message: 'ログアウトしました' });
         expect(tokenBlacklistService.addToBlacklist).toHaveBeenCalledWith(
-          'mock-token',
+          'mock-token'
         );
         expect(mockResponse.cookie).toHaveBeenCalledWith('auth-token', '', {
           httpOnly: true,
@@ -236,13 +236,13 @@ describe('AuthController', () => {
         const result = await controller.logout(
           mockUserFromToken,
           mockResponse,
-          requestWithHeader,
+          requestWithHeader
         );
 
         // Assert
         expect(result).toEqual({ message: 'ログアウトしました' });
         expect(tokenBlacklistService.addToBlacklist).toHaveBeenCalledWith(
-          'mock-token',
+          'mock-token'
         );
         expect(mockResponse.cookie).toHaveBeenCalledWith('auth-token', '', {
           httpOnly: true,
@@ -269,7 +269,7 @@ describe('AuthController', () => {
         const result = await controller.logout(
           mockUserFromToken,
           mockResponse,
-          requestWithoutToken,
+          requestWithoutToken
         );
 
         // Assert
@@ -300,7 +300,7 @@ describe('AuthController', () => {
         await controller.logout(
           mockUserFromToken,
           mockResponse,
-          requestWithCookie,
+          requestWithCookie
         );
 
         // Assert
@@ -317,4 +317,3 @@ describe('AuthController', () => {
     });
   });
 });
-

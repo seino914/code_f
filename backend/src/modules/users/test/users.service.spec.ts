@@ -1,8 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
+import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import { UsersService } from '../users.service';
 import { PrismaService } from '../../../database/prisma/prisma.service';
 import { UpdateUserDto } from '../dto/update-user.dto';
@@ -81,10 +78,10 @@ describe('UsersService', () => {
 
         // Act & Assert
         await expect(service.getUser('non-existent-id')).rejects.toThrow(
-          UnauthorizedException,
+          UnauthorizedException
         );
         await expect(service.getUser('non-existent-id')).rejects.toThrow(
-          'ユーザーが見つかりません',
+          'ユーザーが見つかりません'
         );
         expect(prismaService.user.findUnique).toHaveBeenCalledWith({
           where: { id: 'non-existent-id' },
@@ -162,7 +159,7 @@ describe('UsersService', () => {
         // Act
         const result = await service.updateUser(
           mockUser.id,
-          updateDtoWithoutEmailChange,
+          updateDtoWithoutEmailChange
         );
 
         // Assert
@@ -190,10 +187,10 @@ describe('UsersService', () => {
 
         // Act & Assert
         await expect(
-          service.updateUser('non-existent-id', updateUserDto),
+          service.updateUser('non-existent-id', updateUserDto)
         ).rejects.toThrow(UnauthorizedException);
         await expect(
-          service.updateUser('non-existent-id', updateUserDto),
+          service.updateUser('non-existent-id', updateUserDto)
         ).rejects.toThrow('ユーザーが見つかりません');
         expect(prismaService.user.update).not.toHaveBeenCalled();
       });
@@ -212,8 +209,10 @@ describe('UsersService', () => {
         // Act & Assert
         const promise = service.updateUser(mockUser.id, updateUserDto);
         await expect(promise).rejects.toThrow(ConflictException);
-        await expect(promise).rejects.toThrow('このメールアドレスは既に登録されています');
-        
+        await expect(promise).rejects.toThrow(
+          'このメールアドレスは既に登録されています'
+        );
+
         expect(prismaService.user.findUnique).toHaveBeenCalledTimes(2);
         expect(prismaService.user.findUnique).toHaveBeenNthCalledWith(1, {
           where: { id: mockUser.id },
@@ -226,4 +225,3 @@ describe('UsersService', () => {
     });
   });
 });
-

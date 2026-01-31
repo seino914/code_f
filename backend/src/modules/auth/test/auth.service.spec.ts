@@ -1,6 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
-import { UnauthorizedException, ForbiddenException, ConflictException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  ForbiddenException,
+  ConflictException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { AuthService } from '../auth.service';
 import { PrismaService } from '../../../database/prisma/prisma.service';
@@ -103,7 +107,7 @@ describe('AuthService', () => {
         });
         expect(bcrypt.compare).toHaveBeenCalledWith(
           loginDto.password,
-          mockUser.password,
+          mockUser.password
         );
         expect(jwtService.sign).toHaveBeenCalledWith({
           sub: mockUser.id,
@@ -166,14 +170,14 @@ describe('AuthService', () => {
 
         // Act & Assert
         await expect(service.login(loginDto)).rejects.toThrow(
-          UnauthorizedException,
+          UnauthorizedException
         );
         await expect(service.login(loginDto)).rejects.toThrow(
-          'メールアドレスまたはパスワードが正しくありません',
+          'メールアドレスまたはパスワードが正しくありません'
         );
         expect(bcrypt.compare).toHaveBeenCalledWith(
           loginDto.password,
-          dummyHash,
+          dummyHash
         );
       });
 
@@ -187,11 +191,11 @@ describe('AuthService', () => {
 
         // Act & Assert
         await expect(service.login(loginDto)).rejects.toThrow(
-          UnauthorizedException,
+          UnauthorizedException
         );
         expect(bcrypt.compare).toHaveBeenCalledWith(
           loginDto.password,
-          dummyHash,
+          dummyHash
         );
       });
 
@@ -207,10 +211,10 @@ describe('AuthService', () => {
 
         // Act & Assert
         await expect(service.login(loginDto)).rejects.toThrow(
-          UnauthorizedException,
+          UnauthorizedException
         );
         await expect(service.login(loginDto)).rejects.toThrow(
-          'メールアドレスまたはパスワードが正しくありません。残り試行回数: 4',
+          'メールアドレスまたはパスワードが正しくありません。残り試行回数: 4'
         );
         expect(prismaService.user.update).toHaveBeenCalledWith({
           where: { id: mockUser.id },
@@ -231,10 +235,10 @@ describe('AuthService', () => {
 
         // Act & Assert
         await expect(service.login(loginDto)).rejects.toThrow(
-          ForbiddenException,
+          ForbiddenException
         );
         await expect(service.login(loginDto)).rejects.toThrow(
-          'アカウントがロックされています',
+          'アカウントがロックされています'
         );
         expect(bcrypt.compare).not.toHaveBeenCalled();
       });
@@ -256,10 +260,10 @@ describe('AuthService', () => {
 
         // Act & Assert
         await expect(service.login(loginDto)).rejects.toThrow(
-          ForbiddenException,
+          ForbiddenException
         );
         await expect(service.login(loginDto)).rejects.toThrow(
-          'ログイン試行回数が上限に達しました。アカウントは15分間ロックされます。',
+          'ログイン試行回数が上限に達しました。アカウントは15分間ロックされます。'
         );
         expect(prismaService.user.update).toHaveBeenCalledWith({
           where: { id: userWithMaxAttempts.id },
@@ -314,7 +318,9 @@ describe('AuthService', () => {
         expect(prismaService.user.findUnique).toHaveBeenCalledWith({
           where: { email: registerDto.email },
         });
-        expect(checkPasswordStrength).toHaveBeenCalledWith(registerDto.password);
+        expect(checkPasswordStrength).toHaveBeenCalledWith(
+          registerDto.password
+        );
         expect(bcrypt.hash).toHaveBeenCalledWith(registerDto.password, 10);
         expect(prismaService.user.create).toHaveBeenCalledWith({
           data: {
@@ -336,10 +342,10 @@ describe('AuthService', () => {
 
         // Act & Assert
         await expect(service.register(registerDto)).rejects.toThrow(
-          ConflictException,
+          ConflictException
         );
         await expect(service.register(registerDto)).rejects.toThrow(
-          'このメールアドレスは既に登録されています',
+          'このメールアドレスは既に登録されています'
         );
         expect(checkPasswordStrength).not.toHaveBeenCalled();
         expect(prismaService.user.create).not.toHaveBeenCalled();
@@ -355,14 +361,13 @@ describe('AuthService', () => {
 
         // Act & Assert
         await expect(service.register(registerDto)).rejects.toThrow(
-          ConflictException,
+          ConflictException
         );
         await expect(service.register(registerDto)).rejects.toThrow(
-          'パスワードの強度が不足しています',
+          'パスワードの強度が不足しています'
         );
         expect(prismaService.user.create).not.toHaveBeenCalled();
       });
     });
   });
 });
-

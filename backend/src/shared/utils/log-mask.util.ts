@@ -70,7 +70,7 @@ export function maskSensitiveData(obj: unknown): unknown {
 
     // 機密情報フィールドかチェック
     const isSensitive = SENSITIVE_FIELDS.some((field) =>
-      lowerKey.includes(field.toLowerCase()),
+      lowerKey.includes(field.toLowerCase())
     );
 
     if (isSensitive && typeof value === 'string') {

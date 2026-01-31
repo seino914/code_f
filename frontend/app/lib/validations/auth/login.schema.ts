@@ -33,4 +33,3 @@ export const emailSchema = z
 export const passwordSchema = z
   .string('パスワードは文字列である必要があります')
   .min(6, 'パスワードは6文字以上である必要があります');
-

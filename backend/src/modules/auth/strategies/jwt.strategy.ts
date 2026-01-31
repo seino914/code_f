@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
-    private readonly tokenBlacklistService: TokenBlacklistService,
+    private readonly tokenBlacklistService: TokenBlacklistService
   ) {
     // super()を呼ぶ前に環境変数を取得
     const secret = configService.get<string>('JWT_SECRET') as string;

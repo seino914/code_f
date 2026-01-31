@@ -2,10 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from '../users.controller';
 import { UsersService } from '../users.service';
 import { UpdateUserDto, UpdateUserResponseDto } from '../dto/update-user.dto';
-import {
-  UnauthorizedException,
-  ConflictException,
-} from '@nestjs/common';
+import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 describe('UsersController', () => {
@@ -64,9 +61,7 @@ describe('UsersController', () => {
 
         // Assert
         expect(result).toEqual(mockUser);
-        expect(usersService.getUser).toHaveBeenCalledWith(
-          mockUserFromToken.id,
-        );
+        expect(usersService.getUser).toHaveBeenCalledWith(mockUserFromToken.id);
       });
     });
 
@@ -78,10 +73,10 @@ describe('UsersController', () => {
 
         // Act & Assert
         await expect(controller.getUser(mockUserFromToken)).rejects.toThrow(
-          UnauthorizedException,
+          UnauthorizedException
         );
         await expect(controller.getUser(mockUserFromToken)).rejects.toThrow(
-          'ユーザーが見つかりません',
+          'ユーザーが見つかりません'
         );
       });
     });
@@ -112,14 +107,14 @@ describe('UsersController', () => {
         // Act
         const result = await controller.updateUser(
           mockUserFromToken,
-          updateUserDto,
+          updateUserDto
         );
 
         // Assert
         expect(result).toEqual(updateUserResponse);
         expect(usersService.updateUser).toHaveBeenCalledWith(
           mockUserFromToken.id,
-          updateUserDto,
+          updateUserDto
         );
       });
     });
@@ -132,29 +127,28 @@ describe('UsersController', () => {
 
         // Act & Assert
         await expect(
-          controller.updateUser(mockUserFromToken, updateUserDto),
+          controller.updateUser(mockUserFromToken, updateUserDto)
         ).rejects.toThrow(UnauthorizedException);
         await expect(
-          controller.updateUser(mockUserFromToken, updateUserDto),
+          controller.updateUser(mockUserFromToken, updateUserDto)
         ).rejects.toThrow('ユーザーが見つかりません');
       });
 
       it('メールアドレスが既に登録されている場合、UsersServiceのエラーがそのままスローされること', async () => {
         // Arrange
         const error = new ConflictException(
-          'このメールアドレスは既に登録されています',
+          'このメールアドレスは既に登録されています'
         );
         usersService.updateUser.mockRejectedValue(error);
 
         // Act & Assert
         await expect(
-          controller.updateUser(mockUserFromToken, updateUserDto),
+          controller.updateUser(mockUserFromToken, updateUserDto)
         ).rejects.toThrow(ConflictException);
         await expect(
-          controller.updateUser(mockUserFromToken, updateUserDto),
+          controller.updateUser(mockUserFromToken, updateUserDto)
         ).rejects.toThrow('このメールアドレスは既に登録されています');
       });
     });
   });
 });
-

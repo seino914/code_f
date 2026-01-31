@@ -33,7 +33,7 @@ import { TokenBlacklistService } from './services/token-blacklist.service';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly tokenBlacklistService: TokenBlacklistService,
+    private readonly tokenBlacklistService: TokenBlacklistService
   ) {}
 
   /**
@@ -64,7 +64,7 @@ export class AuthController {
     description: 'リクエストが多すぎます（レート制限）',
   })
   async register(
-    @Body() registerDto: RegisterDto,
+    @Body() registerDto: RegisterDto
   ): Promise<RegisterResponseDto> {
     return await this.authService.register(registerDto);
   }
@@ -95,7 +95,7 @@ export class AuthController {
   })
   async login(
     @Body() loginDto: LoginDto,
-    @Res({ passthrough: true }) response: Response,
+    @Res({ passthrough: true }) response: Response
   ): Promise<LoginResponseDto> {
     const result = await this.authService.login(loginDto);
 
@@ -135,7 +135,7 @@ export class AuthController {
   async logout(
     @CurrentUser() user: any,
     @Res({ passthrough: true }) response: Response,
-    @Req() request: any,
+    @Req() request: any
   ) {
     // トークンを取得（クッキーまたはAuthorizationヘッダーから）
     let token: string | null = null;

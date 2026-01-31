@@ -23,4 +23,3 @@ export const updateUserSchema = z.object({
  * ユーザー情報更新スキーマの型
  */
 export type UpdateUserFormData = z.infer<typeof updateUserSchema>;
-
