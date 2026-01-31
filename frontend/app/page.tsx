@@ -1,5 +1,10 @@
 import { LoginForm } from './(auth)/login';
 
 export default function Home() {
-  return <LoginForm />;
+  return (<>
+    <LoginForm />
+    <div>
+      <p>aaaaatest</p>
+    </div>
+  </>);
 }
