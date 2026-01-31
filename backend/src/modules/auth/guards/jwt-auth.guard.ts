@@ -16,7 +16,7 @@ import { TokenBlacklistService } from '../services/token-blacklist.service';
 export class JwtAuthGuard extends AuthGuard('jwt') {
   constructor(
     private reflector: Reflector,
-    private tokenBlacklistService: TokenBlacklistService,
+    private tokenBlacklistService: TokenBlacklistService
   ) {
     super();
   }

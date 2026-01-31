@@ -51,7 +51,7 @@ export function LoginForm() {
         // fetch自体が失敗した場合（ネットワークエラー、CORSエラーなど）
         console.error('Fetch error:', fetchError);
         throw new Error(
-          `ネットワークエラー: ${fetchError instanceof Error ? fetchError.message : '接続に失敗しました'}`,
+          `ネットワークエラー: ${fetchError instanceof Error ? fetchError.message : '接続に失敗しました'}`
         );
       });
 
@@ -59,24 +59,28 @@ export function LoginForm() {
         // エラーレスポンスをパース
         let errorData: { message?: string | string[]; error?: string } = {};
         const contentType = response.headers.get('content-type');
-        
+
         if (contentType && contentType.includes('application/json')) {
           try {
             errorData = await response.json();
           } catch (parseError) {
             // JSONパースに失敗した場合
             console.error('Failed to parse error response:', parseError);
-            setError(`サーバーエラーが発生しました（ステータス: ${response.status}）。`);
+            setError(
+              `サーバーエラーが発生しました（ステータス: ${response.status}）。`
+            );
             return;
           }
         }
-        
+
         // レート制限エラー（429）の場合
         if (response.status === 429) {
-          setError('リクエストが多すぎます。しばらく時間をおいてから再度お試しください。');
+          setError(
+            'リクエストが多すぎます。しばらく時間をおいてから再度お試しください。'
+          );
           return;
         }
-        
+
         // バリデーションエラー（400）の場合、メッセージ配列を処理
         if (response.status === 400) {
           if (Array.isArray(errorData.message)) {
@@ -91,16 +95,18 @@ export function LoginForm() {
           }
           return;
         }
-        
+
         // 認証エラー（401）の場合
         if (response.status === 401) {
           setError('メールアドレスまたはパスワードが正しくありません。');
           return;
         }
-        
+
         // その他のエラーの場合
-        const errorMessage = 
-          (typeof errorData.message === 'string' ? errorData.message : undefined) ||
+        const errorMessage =
+          (typeof errorData.message === 'string'
+            ? errorData.message
+            : undefined) ||
           (typeof errorData.error === 'string' ? errorData.error : undefined) ||
           `ログインに失敗しました（ステータス: ${response.status}）。しばらくしてから再度お試しください。`;
         setError(errorMessage);
@@ -116,29 +122,29 @@ export function LoginForm() {
         setError('サーバーからのレスポンスの解析に失敗しました。');
         return;
       }
-      
+
       // レスポンスデータの検証
       if (!data || !data.accessToken || !data.user) {
         setError('ログインに失敗しました。レスポンスデータが不正です。');
         return;
       }
-      
+
       // クッキーはバックエンドでHttpOnlyとして設定されるため、
       // クライアント側での設定は不要（セキュリティ強化）
       // リダイレクト前に少し待機してクッキーが確実に設定されるようにする
       await new Promise((resolve) => setTimeout(resolve, 100));
-      
+
       // ページをリロードしてmiddlewareがクッキーを認識できるようにする
       router.refresh();
       router.push('/dashboard');
     } catch (err) {
       // ネットワークエラーなどの場合
       console.error('Login error:', err);
-      
+
       if (err instanceof Error) {
         // エラーメッセージに基づいて適切なメッセージを表示
         const errorMessage = err.message;
-        
+
         if (
           errorMessage.includes('Failed to fetch') ||
           errorMessage.includes('NetworkError') ||
@@ -146,13 +152,15 @@ export function LoginForm() {
           errorMessage.includes('CORS')
         ) {
           setError(
-            'バックエンドサーバーに接続できません。サーバーが起動しているか確認してください。',
+            'バックエンドサーバーに接続できません。サーバーが起動しているか確認してください。'
           );
         } else {
           setError(errorMessage);
         }
       } else {
-        setError('ログインに失敗しました。しばらくしてから再度お試しください。');
+        setError(
+          'ログインに失敗しました。しばらくしてから再度お試しください。'
+        );
       }
     } finally {
       setIsLoading(false);
@@ -212,4 +220,3 @@ export function LoginForm() {
     </div>
   );
 }
-

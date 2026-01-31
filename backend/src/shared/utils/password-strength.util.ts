@@ -18,7 +18,7 @@ export interface PasswordStrengthResult {
  * - 記号を含む（オプション、推奨）
  */
 export function checkPasswordStrength(
-  password: string,
+  password: string
 ): PasswordStrengthResult {
   const errors: string[] = [];
 

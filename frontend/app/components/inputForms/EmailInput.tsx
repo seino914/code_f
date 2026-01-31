@@ -44,7 +44,7 @@ export function EmailInput({
       if (error) {
         setError(undefined);
       }
-      
+
       // リアルタイムバリデーション（空でない場合のみ）
       if (newValue.length > 0) {
         const validationError = validateEmail(newValue);
@@ -101,4 +101,3 @@ export function EmailInput({
     </div>
   );
 }
-

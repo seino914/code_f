@@ -1,4 +1,4 @@
-import { HeaderMenu } from "../components/header/HeaderMenu";
+import { HeaderMenu } from '../components/header/HeaderMenu';
 
 export default function MainLayout({
   children,
@@ -12,5 +12,3 @@ export default function MainLayout({
     </>
   );
 }
-
-

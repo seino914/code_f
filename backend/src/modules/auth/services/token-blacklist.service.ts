@@ -12,7 +12,7 @@ export class TokenBlacklistService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: JwtService
   ) {}
 
   /**
@@ -50,7 +50,7 @@ export class TokenBlacklistService {
       });
 
       this.logger.log(
-        `Token added to blacklist (expires at: ${expiresAt.toISOString()})`,
+        `Token added to blacklist (expires at: ${expiresAt.toISOString()})`
       );
     } catch (error) {
       this.logger.error(`Failed to add token to blacklist: ${error}`);
@@ -94,7 +94,7 @@ export class TokenBlacklistService {
 
       if (result.count > 0) {
         this.logger.log(
-          `Cleaned up ${result.count} expired tokens from blacklist`,
+          `Cleaned up ${result.count} expired tokens from blacklist`
         );
       }
     } catch (error) {

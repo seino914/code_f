@@ -100,7 +100,7 @@ async function bootstrap() {
           description: 'JWT認証トークン',
           in: 'header',
         },
-        'JWT-auth', // この名前は@ApiBearerAuth('JWT-auth')で使用
+        'JWT-auth' // この名前は@ApiBearerAuth('JWT-auth')で使用
       )
       .build();
     const document = SwaggerModule.createDocument(app, config);

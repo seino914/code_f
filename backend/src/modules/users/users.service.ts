@@ -4,12 +4,8 @@ import {
   ConflictException,
   Logger,
 } from '@nestjs/common';
+import { UpdateUserDto, UpdateUserResponseDto } from './dto/update-user.dto';
 import { PrismaService } from '../../database/prisma/prisma.service';
-import {
-  UpdateUserDto,
-  UpdateUserResponseDto,
-} from './dto/update-user.dto';
-
 /**
  * ユーザーサービス
  * ユーザー情報の取得・更新を担当
@@ -53,7 +49,7 @@ export class UsersService {
    */
   async updateUser(
     userId: string,
-    updateUserDto: UpdateUserDto,
+    updateUserDto: UpdateUserDto
   ): Promise<UpdateUserResponseDto> {
     // メールアドレスが変更される場合、重複チェック
     const currentUser = await this.prisma.user.findUnique({
@@ -98,4 +94,3 @@ export class UsersService {
     };
   }
 }
-

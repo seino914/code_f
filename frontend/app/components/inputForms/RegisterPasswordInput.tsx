@@ -53,7 +53,7 @@ export function RegisterPasswordInput({
       if (error) {
         setError(undefined);
       }
-      
+
       // リアルタイムバリデーション（空でない場合のみ）
       if (newValue.length > 0) {
         const validationError = validateRegisterPassword(newValue);
@@ -104,7 +104,11 @@ export function RegisterPasswordInput({
         aria-describedby={error ? 'password-error' : undefined}
       />
       {error && (
-        <p id="password-error" className="mt-1 text-xs text-red-600" role="alert">
+        <p
+          id="password-error"
+          className="mt-1 text-xs text-red-600"
+          role="alert"
+        >
           {error}
         </p>
       )}
@@ -114,4 +118,3 @@ export function RegisterPasswordInput({
     </div>
   );
 }
-

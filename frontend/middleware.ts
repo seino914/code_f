@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 /**
  * 認証ガード用 Middleware
  * ログインしていないユーザーを保護されたページから遮断する
- * 
+ *
  * 動作：
  * - 公開ページ（`/` と `/register`）へのアクセス制御
  * - 未ログインで公開ページ以外にアクセス → ログインページにリダイレクト
@@ -41,13 +41,13 @@ export function middleware(request: NextRequest) {
 
 /**
  * Middleware を適用するパスを指定
- * 
+ *
  * 対象：
  * - `/` : ログインページ（ログイン済みならダッシュボードへリダイレクト）
  * - `/register` : 登録ページ（ログイン済みならダッシュボードへリダイレクト）
  * - `/dashboard/*` : 保護されたページ（ログイン必須）
  * - その他全てのパス（存在しないパスも含む）: 未ログインならログインページにリダイレクト
- * 
+ *
  * 除外：
  * - `/api/*` : APIルート
  * - `/_next/static/*` : 静的ファイル
@@ -60,4 +60,3 @@ export const config = {
     '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };
-

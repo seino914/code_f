@@ -13,18 +13,9 @@ export const registerSchema = z
     password: z
       .string('パスワードは文字列である必要があります')
       .min(8, 'パスワードは8文字以上である必要があります')
-      .regex(
-        /[A-Z]/,
-        'パスワードには大文字を含める必要があります',
-      )
-      .regex(
-        /[a-z]/,
-        'パスワードには小文字を含める必要があります',
-      )
-      .regex(
-        /[0-9]/,
-        'パスワードには数字を含める必要があります',
-      ),
+      .regex(/[A-Z]/, 'パスワードには大文字を含める必要があります')
+      .regex(/[a-z]/, 'パスワードには小文字を含める必要があります')
+      .regex(/[0-9]/, 'パスワードには数字を含める必要があります'),
     passwordConfirm: z
       .string('パスワード確認は文字列である必要があります')
       .min(1, 'パスワード確認を入力してください'),
@@ -46,4 +37,3 @@ export const registerSchema = z
  * 登録スキーマの型
  */
 export type RegisterFormData = z.infer<typeof registerSchema>;
-
