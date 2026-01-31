@@ -3,7 +3,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { NameInput, CompanyInput, EmailInput } from '../../components/inputForms';
+import {
+  NameInput,
+  CompanyInput,
+  EmailInput,
+} from '../../components/inputForms';
 import { RegisterPasswordInput } from '../../components/inputForms/RegisterPasswordInput';
 import { PasswordConfirmInput } from '../../components/inputForms/PasswordConfirmInput';
 import { registerSchema } from '../../lib/validations/auth/register.schema';
@@ -29,7 +33,7 @@ export function RegisterForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
-  
+
   // フォームの状態
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -81,7 +85,7 @@ export function RegisterForm() {
       }).catch((fetchError) => {
         console.error('Fetch error:', fetchError);
         throw new Error(
-          `ネットワークエラー: ${fetchError instanceof Error ? fetchError.message : '接続に失敗しました'}`,
+          `ネットワークエラー: ${fetchError instanceof Error ? fetchError.message : '接続に失敗しました'}`
         );
       });
 
@@ -89,23 +93,27 @@ export function RegisterForm() {
         // エラーレスポンスをパース
         let errorData: { message?: string | string[]; error?: string } = {};
         const contentType = response.headers.get('content-type');
-        
+
         if (contentType && contentType.includes('application/json')) {
           try {
             errorData = await response.json();
           } catch (parseError) {
             console.error('Failed to parse error response:', parseError);
-            setError(`サーバーエラーが発生しました（ステータス: ${response.status}）。`);
+            setError(
+              `サーバーエラーが発生しました（ステータス: ${response.status}）。`
+            );
             return;
           }
         }
-        
+
         // レート制限エラー（429）の場合
         if (response.status === 429) {
-          setError('リクエストが多すぎます。しばらく時間をおいてから再度お試しください。');
+          setError(
+            'リクエストが多すぎます。しばらく時間をおいてから再度お試しください。'
+          );
           return;
         }
-        
+
         // バリデーションエラー（400）の場合、メッセージ配列を処理
         if (response.status === 400) {
           if (Array.isArray(errorData.message)) {
@@ -120,7 +128,7 @@ export function RegisterForm() {
           }
           return;
         }
-        
+
         // 重複エラー（409）の場合
         if (response.status === 409) {
           if (typeof errorData.message === 'string') {
@@ -130,10 +138,12 @@ export function RegisterForm() {
           }
           return;
         }
-        
+
         // その他のエラーの場合
-        const errorMessage = 
-          (typeof errorData.message === 'string' ? errorData.message : undefined) ||
+        const errorMessage =
+          (typeof errorData.message === 'string'
+            ? errorData.message
+            : undefined) ||
           (typeof errorData.error === 'string' ? errorData.error : undefined) ||
           `登録に失敗しました（ステータス: ${response.status}）。しばらくしてから再度お試しください。`;
         setError(errorMessage);
@@ -149,18 +159,18 @@ export function RegisterForm() {
         setError('サーバーからのレスポンスの解析に失敗しました。');
         return;
       }
-      
+
       // レスポンスデータの検証
       if (!data || !data.user) {
         setError('登録に失敗しました。レスポンスデータが不正です。');
         return;
       }
-      
+
       // 登録成功時のトーストを表示
       toast.success('登録が完了しました', {
         description: 'アカウントの作成が成功しました。',
       });
-      
+
       // 少し待ってからログインページにリダイレクト
       setTimeout(() => {
         router.push('/login');
@@ -168,10 +178,10 @@ export function RegisterForm() {
     } catch (err) {
       // ネットワークエラーなどの場合
       console.error('Register error:', err);
-      
+
       if (err instanceof Error) {
         const errorMessage = err.message;
-        
+
         if (
           errorMessage.includes('Failed to fetch') ||
           errorMessage.includes('NetworkError') ||
@@ -179,7 +189,7 @@ export function RegisterForm() {
           errorMessage.includes('CORS')
         ) {
           setError(
-            'バックエンドサーバーに接続できません。サーバーが起動しているか確認してください。',
+            'バックエンドサーバーに接続できません。サーバーが起動しているか確認してください。'
           );
         } else {
           setError(errorMessage);
@@ -271,4 +281,3 @@ export function RegisterForm() {
     </div>
   );
 }
-

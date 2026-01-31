@@ -24,7 +24,7 @@ export class AuthService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwtService: JwtService,
+    private readonly jwtService: JwtService
   ) {}
 
   /**
@@ -49,10 +49,10 @@ export class AuthService {
       // ロックが解除されているかチェック
       if (user.lockedUntil && user.lockedUntil > new Date()) {
         const remainingMinutes = Math.ceil(
-          (user.lockedUntil.getTime() - Date.now()) / (60 * 1000),
+          (user.lockedUntil.getTime() - Date.now()) / (60 * 1000)
         );
         throw new ForbiddenException(
-          `アカウントがロックされています。${remainingMinutes}分後に再試行してください。`,
+          `アカウントがロックされています。${remainingMinutes}分後に再試行してください。`
         );
       }
 
@@ -76,14 +76,14 @@ export class AuthService {
         '$2b$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
       await bcrypt.compare(loginDto.password, dummyHash);
       throw new UnauthorizedException(
-        'メールアドレスまたはパスワードが正しくありません',
+        'メールアドレスまたはパスワードが正しくありません'
       );
     }
 
     // パスワードの検証
     const isPasswordValid = await bcrypt.compare(
       loginDto.password,
-      user.password,
+      user.password
     );
 
     if (!isPasswordValid) {
@@ -103,16 +103,16 @@ export class AuthService {
 
       if (shouldLock) {
         this.logger.warn(
-          `Account locked due to too many failed login attempts: ${user.email}`,
+          `Account locked due to too many failed login attempts: ${user.email}`
         );
         throw new ForbiddenException(
-          `ログイン試行回数が上限に達しました。アカウントは15分間ロックされます。`,
+          `ログイン試行回数が上限に達しました。アカウントは15分間ロックされます。`
         );
       }
 
       const remainingAttempts = this.MAX_LOGIN_ATTEMPTS - newFailedAttempts;
       throw new UnauthorizedException(
-        `メールアドレスまたはパスワードが正しくありません。残り試行回数: ${remainingAttempts}`,
+        `メールアドレスまたはパスワードが正しくありません。残り試行回数: ${remainingAttempts}`
       );
     }
 
@@ -166,7 +166,7 @@ export class AuthService {
     const passwordStrength = checkPasswordStrength(registerDto.password);
     if (!passwordStrength.isValid) {
       throw new ConflictException(
-        `パスワードの強度が不足しています: ${passwordStrength.errors.join(', ')}`,
+        `パスワードの強度が不足しています: ${passwordStrength.errors.join(', ')}`
       );
     }
 

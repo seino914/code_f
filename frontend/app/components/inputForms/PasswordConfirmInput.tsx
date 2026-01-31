@@ -18,7 +18,7 @@ const baseInputClassName =
  */
 const validatePasswordConfirm = (
   passwordConfirm: string,
-  password: string,
+  password: string
 ): string | undefined => {
   if (passwordConfirm.length === 0) {
     return 'パスワード確認を入力してください';
@@ -49,7 +49,7 @@ export function PasswordConfirmInput({
       if (error) {
         setError(undefined);
       }
-      
+
       // リアルタイムバリデーション（空でない場合のみ）
       if (newValue.length > 0) {
         const validationError = validatePasswordConfirm(newValue, password);
@@ -99,11 +99,14 @@ export function PasswordConfirmInput({
         aria-describedby={error ? 'password-confirm-error' : undefined}
       />
       {error && (
-        <p id="password-confirm-error" className="mt-1 text-xs text-red-600" role="alert">
+        <p
+          id="password-confirm-error"
+          className="mt-1 text-xs text-red-600"
+          role="alert"
+        >
           {error}
         </p>
       )}
     </div>
   );
 }
-

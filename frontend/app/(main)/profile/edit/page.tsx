@@ -3,7 +3,11 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
-import { NameInput, CompanyInput, EmailInput } from '../../../components/inputForms';
+import {
+  NameInput,
+  CompanyInput,
+  EmailInput,
+} from '../../../components/inputForms';
 import { updateUserSchema } from '../../../lib/validations/profile/update-user.schema';
 
 /**
@@ -249,4 +253,3 @@ export default function ProfileEditPage() {
     </div>
   );
 }
-

@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { EmailInput } from '../../components/inputForms';
 import { PasswordInput } from '../../components/inputForms/PasswordInput';
-import { loginSchema, type LoginFormData } from '../../lib/validations/auth/login.schema';
+import {
+  loginSchema,
+  type LoginFormData,
+} from '../../lib/validations/auth/login.schema';
 
 interface EmailLoginFormProps {
   onSubmit: (email: string, password: string) => void | Promise<void>;
@@ -37,11 +40,15 @@ export function EmailLoginForm({
       // 最初のエラーメッセージを表示
       const firstError = result.error.issues[0];
       setFormError(firstError?.message);
-      
+
       // バリデーション状態を更新
-      const emailError = result.error.issues.find((issue) => issue.path[0] === 'email');
-      const passwordError = result.error.issues.find((issue) => issue.path[0] === 'password');
-      
+      const emailError = result.error.issues.find(
+        (issue) => issue.path[0] === 'email'
+      );
+      const passwordError = result.error.issues.find(
+        (issue) => issue.path[0] === 'password'
+      );
+
       setIsEmailValid(!emailError);
       setIsPasswordValid(!passwordError);
       return;
@@ -101,4 +108,3 @@ export function EmailLoginForm({
     </form>
   );
 }
-

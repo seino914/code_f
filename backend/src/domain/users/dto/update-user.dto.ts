@@ -42,6 +42,5 @@ const UpdateUserResponseSchema = z.object({
  * ユーザー情報更新成功レスポンスDTO（Zodスキーマから生成）
  */
 export class UpdateUserResponseDto extends createZodDto(
-  UpdateUserResponseSchema,
+  UpdateUserResponseSchema
 ) {}
-

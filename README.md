@@ -7,6 +7,7 @@
 - Turborepoを使用したビルドシステム
 
 ## ディレクトリ構成
+
 ```
 code_f/
 ├── backend/      # NestJS バックエンド
@@ -43,12 +44,12 @@ docker compose up -d
 
 コンテナが起動すると、以下の設定でPostgreSQLに接続できます：
 
-| 項目 | 値 |
-|------|-----|
-| ホスト | `localhost:5432` |
-| ユーザー | `postgres` |
-| パスワード | `postgres` |
-| データベース名 | `code_f` |
+| 項目           | 値               |
+| -------------- | ---------------- |
+| ホスト         | `localhost:5432` |
+| ユーザー       | `postgres`       |
+| パスワード     | `postgres`       |
+| データベース名 | `code_f`         |
 
 ### 3. 環境変数の設定
 
@@ -69,7 +70,6 @@ pnpm --filter backend prisma:generate
 ```bash
 pnpm dev
 ```
-
 
 ## Dockerコマンド
 
@@ -126,12 +126,14 @@ docker system prune -f
 <summary><strong>コマンド一覧</strong></summary>
 
 ### 開発サーバーの起動
+
 ```bash
 # すべてのワークスペースの開発サーバーを起動
 pnpm dev
 ```
 
 ### 個別の開発サーバー起動
+
 ```bash
 # バックエンドのみ起動
 # → http://localhost:3001
@@ -144,24 +146,28 @@ pnpm --filter frontend dev
 ```
 
 ### ビルド
+
 ```bash
 # すべてのワークスペースをビルド
 pnpm build
 ```
 
 ### リント
+
 ```bash
 # すべてのワークスペースをリント
 pnpm lint
 ```
 
 ### テスト
+
 ```bash
 # すべてのワークスペースのテストを実行
 pnpm test
 ```
 
 ### クリーン
+
 ```bash
 # すべてのワークスペースのビルド成果物を削除
 pnpm clean

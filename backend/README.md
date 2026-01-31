@@ -56,11 +56,13 @@ src/
 ## 設計原則
 
 ### 1. ドメイン駆動設計（DDD）
+
 - 機能ごとにモジュールを分割（`modules/`配下）
 - 各モジュールは独立性を保ち、疎結合を維持
 - ビジネスロジックはサービス層に集約
 
 ### 2. 責任の分離
+
 - **modules/**: ビジネスロジック・ドメイン固有の処理
 - **common/**: アプリケーション全体で使用する横断的関心事
 - **shared/**: 汎用的なユーティリティ・ヘルパー関数
@@ -68,6 +70,7 @@ src/
 - **config/**: 設定管理
 
 ### 3. スケーラビリティ
+
 - 新しい機能は`modules/`配下に新しいモジュールとして追加
 - 共通処理は`common/`または`shared/`に抽出
 - モジュール間の依存は最小限に保つ
@@ -144,4 +147,3 @@ import { maskSensitiveData } from '../../shared/utils/log-mask.util';
 - [NestJS公式ドキュメント](https://docs.nestjs.com/)
 - [NestJS Best Practices](https://docs.nestjs.com/fundamentals/testing)
 - [Domain-Driven Design](https://martinfowler.com/bliki/DomainDrivenDesign.html)
-

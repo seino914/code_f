@@ -7,7 +7,9 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
       <div className="container mx-auto px-4 py-8">
         {/* ページタイトル */}
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">ダッシュボード</h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">
+          ダッシュボード
+        </h1>
 
         {/* メインコンテンツ */}
         <main className="space-y-6">
@@ -53,7 +55,9 @@ export default function DashboardPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm">
                 <div className="h-2 w-2 rounded-full bg-sky-500" />
-                <span className="text-gray-700">新しいユーザーが登録しました</span>
+                <span className="text-gray-700">
+                  新しいユーザーが登録しました
+                </span>
                 <span className="ml-auto text-gray-500">2分前</span>
               </div>
               <div className="flex items-center gap-3 text-sm">
@@ -73,4 +77,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

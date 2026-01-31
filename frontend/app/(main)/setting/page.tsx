@@ -25,9 +25,7 @@ export default function SettingPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               通知設定
             </h2>
-            <p className="text-gray-600">
-              通知設定の機能は今後実装予定です。
-            </p>
+            <p className="text-gray-600">通知設定の機能は今後実装予定です。</p>
           </div>
 
           <div className="bg-white border border-gray-200 rounded-2xl shadow-lg px-6 py-8">
@@ -43,4 +41,3 @@ export default function SettingPage() {
     </div>
   );
 }
-
