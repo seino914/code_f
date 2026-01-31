@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
+import { AuthModule } from './domain/auth/auth.module';
+import { UsersModule } from './domain/users/users.module';
 import { PrismaModule } from './database/prisma/prisma.module';
-import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from './domain/auth/guards/jwt-auth.guard';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 
 /**
