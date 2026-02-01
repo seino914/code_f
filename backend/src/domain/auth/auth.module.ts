@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
@@ -14,7 +14,9 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 /**
  * 認証モジュール
  * JWT認証とログイン機能を提供
+ * グローバルモジュールとして設定（TokenBlacklistServiceを全モジュールで利用可能にするため）
  */
+@Global()
 @Module({
   imports: [
     PrismaModule,
