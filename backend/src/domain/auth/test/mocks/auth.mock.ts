@@ -100,4 +100,3 @@ export const mockUserWithoutPasswordEntity = {
   ...mockUserEntity,
   password: null,
 } as unknown as User;
-

@@ -40,4 +40,3 @@ export class AuthService {
     return await this.authUsecase.register(registerDto);
   }
 }
-

@@ -70,4 +70,3 @@ export class UsersController {
     return await this.usersService.updateUser(user.id, updateUserDto);
   }
 }
-

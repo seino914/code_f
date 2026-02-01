@@ -35,4 +35,3 @@ export class UsersService {
     return await this.usersUsecase.updateUser(userId, updateUserDto);
   }
 }
-

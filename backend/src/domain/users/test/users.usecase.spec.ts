@@ -108,7 +108,10 @@ describe('UsersUsecase', () => {
         });
 
         // Act
-        await usecase.updateUser(mockUserEntity.id, updateDtoWithoutEmailChange);
+        await usecase.updateUser(
+          mockUserEntity.id,
+          updateDtoWithoutEmailChange
+        );
 
         // Assert
         expect(repository.findByEmail).not.toHaveBeenCalled();
@@ -141,4 +144,3 @@ describe('UsersUsecase', () => {
     });
   });
 });
-

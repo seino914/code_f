@@ -116,10 +116,14 @@ describe('AuthUsecase', () => {
         // Assert
         expect(result.accessToken).toBe('mock-access-token');
         expect(repository.update).toHaveBeenCalledTimes(2);
-        expect(repository.update).toHaveBeenNthCalledWith(1, mockUnlockedUserEntity.id, {
-          failedLoginAttempts: 0,
-          lockedUntil: null,
-        });
+        expect(repository.update).toHaveBeenNthCalledWith(
+          1,
+          mockUnlockedUserEntity.id,
+          {
+            failedLoginAttempts: 0,
+            lockedUntil: null,
+          }
+        );
       });
     });
 
@@ -216,10 +220,13 @@ describe('AuthUsecase', () => {
         await expect(usecase.login(mockLoginDto)).rejects.toThrow(
           'ログイン試行回数が上限に達しました。アカウントは15分間ロックされます。'
         );
-        expect(repository.update).toHaveBeenCalledWith(mockMaxAttemptsUserEntity.id, {
-          failedLoginAttempts: 5,
-          lockedUntil: expect.any(Date),
-        });
+        expect(repository.update).toHaveBeenCalledWith(
+          mockMaxAttemptsUserEntity.id,
+          {
+            failedLoginAttempts: 5,
+            lockedUntil: expect.any(Date),
+          }
+        );
       });
     });
   });
@@ -247,8 +254,12 @@ describe('AuthUsecase', () => {
 
         // Assert
         expect(result).toEqual(mockRegisterResponse);
-        expect(repository.findByEmail).toHaveBeenCalledWith(mockRegisterDto.email);
-        expect(checkPasswordStrength).toHaveBeenCalledWith(mockRegisterDto.password);
+        expect(repository.findByEmail).toHaveBeenCalledWith(
+          mockRegisterDto.email
+        );
+        expect(checkPasswordStrength).toHaveBeenCalledWith(
+          mockRegisterDto.password
+        );
         expect(bcrypt.hash).toHaveBeenCalledWith(mockRegisterDto.password, 10);
         expect(repository.create).toHaveBeenCalledWith({
           email: mockRegisterDto.email,
@@ -297,4 +308,3 @@ describe('AuthUsecase', () => {
     });
   });
 });
-

@@ -56,7 +56,6 @@ describe('AuthController', () => {
   });
 
   describe('login', () => {
-
     describe('正常系', () => {
       it('正しい認証情報の場合、アクセストークンとユーザー情報が返され、クッキーが設定されること', async () => {
         // Arrange
@@ -119,16 +118,15 @@ describe('AuthController', () => {
         authService.login.mockRejectedValue(error);
 
         // Act & Assert
-        await expect(controller.login(mockLoginDto, mockResponse)).rejects.toThrow(
-          '認証失敗'
-        );
+        await expect(
+          controller.login(mockLoginDto, mockResponse)
+        ).rejects.toThrow('認証失敗');
         expect(mockResponse.cookie).not.toHaveBeenCalled();
       });
     });
   });
 
   describe('register', () => {
-
     describe('正常系', () => {
       it('有効な登録情報の場合、ユーザー情報が返されること', async () => {
         // Arrange

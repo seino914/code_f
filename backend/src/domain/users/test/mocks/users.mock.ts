@@ -87,4 +87,3 @@ export const mockOtherUserEntity: User = {
   id: 'other-user-id',
   email: mockUpdateUserDto.email,
 };
-
