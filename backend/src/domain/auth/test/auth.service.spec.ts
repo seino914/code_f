@@ -36,7 +36,7 @@ describe('AuthService', () => {
 
   describe('login', () => {
     describe('正常系', () => {
-      it('UseCaseのloginが呼び出され、結果がそのまま返されること', async () => {
+      it('UseCaseのloginが呼び出された場合、結果がそのまま返されること', async () => {
         // Arrange
         usecase.login.mockResolvedValue(mockLoginResponse);
 
@@ -64,7 +64,7 @@ describe('AuthService', () => {
 
   describe('register', () => {
     describe('正常系', () => {
-      it('UseCaseのregisterが呼び出され、結果がそのまま返されること', async () => {
+      it('UseCaseのregisterが呼び出された場合、結果がそのまま返されること', async () => {
         // Arrange
         usecase.register.mockResolvedValue(mockRegisterResponse);
 

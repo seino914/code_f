@@ -36,7 +36,7 @@ describe('UsersService', () => {
 
   describe('getUser', () => {
     describe('正常系', () => {
-      it('UseCaseのgetUserが呼び出され、結果がそのまま返されること', async () => {
+      it('UseCaseのgetUserが呼び出された場合、結果がそのまま返されること', async () => {
         // Arrange
         usecase.getUser.mockResolvedValue(mockUserResponse);
 
@@ -64,7 +64,7 @@ describe('UsersService', () => {
 
   describe('updateUser', () => {
     describe('正常系', () => {
-      it('UseCaseのupdateUserが呼び出され、結果がそのまま返されること', async () => {
+      it('UseCaseのupdateUserが呼び出された場合、結果がそのまま返されること', async () => {
         // Arrange
         usecase.updateUser.mockResolvedValue(mockUpdateUserResponse);
 

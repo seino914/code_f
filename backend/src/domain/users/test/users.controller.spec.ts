@@ -42,7 +42,7 @@ describe('UsersController', () => {
 
   describe('getUser', () => {
     describe('正常系', () => {
-      it('ServiceのgetUserが呼び出され、結果がそのまま返されること', async () => {
+      it('ServiceのgetUserが呼び出された場合、結果がそのまま返されること', async () => {
         // Arrange
         usersService.getUser.mockResolvedValue(mockUserResponse);
 
@@ -72,7 +72,7 @@ describe('UsersController', () => {
 
   describe('updateUser', () => {
     describe('正常系', () => {
-      it('ServiceのupdateUserが呼び出され、結果がそのまま返されること', async () => {
+      it('ServiceのupdateUserが呼び出された場合、結果がそのまま返されること', async () => {
         // Arrange
         usersService.updateUser.mockResolvedValue(mockUpdateUserResponse);
 

@@ -104,7 +104,7 @@ describe('UsersRepository', () => {
 
   describe('update', () => {
     describe('正常系', () => {
-      it('更新データが正しく渡され、更新されたユーザー情報が返されること', async () => {
+      it('更新データが正しく渡された場合、更新されたユーザー情報が返されること', async () => {
         // Arrange
         prismaService.user.update.mockResolvedValue(mockUpdatedUserEntity);
 
