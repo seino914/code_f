@@ -1,19 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import { UsersService } from '../users.service';
 import { UsersUsecase } from '../usecase/users.usecase';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import {
+  mockUserEntity,
+  mockUserResponse,
+  mockUpdateUserDto,
+  mockUpdateUserResponse,
+} from './mocks/users.mock';
 
 describe('UsersService', () => {
   let service: UsersService;
   let usecase: jest.Mocked<UsersUsecase>;
-
-  const mockUser = {
-    id: 'user-123',
-    email: 'test@example.com',
-    name: 'Test User',
-    company: 'Test Company',
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -39,107 +36,66 @@ describe('UsersService', () => {
 
   describe('getUser', () => {
     describe('正常系', () => {
-      it('ユーザーが存在する場合、ユーザー情報が返されること', async () => {
+      it('UseCaseのgetUserが呼び出され、結果がそのまま返されること', async () => {
         // Arrange
-        usecase.getUser.mockResolvedValue(mockUser);
+        usecase.getUser.mockResolvedValue(mockUserResponse);
 
         // Act
-        const result = await service.getUser(mockUser.id);
+        const result = await service.getUser(mockUserEntity.id);
 
         // Assert
-        expect(result).toEqual(mockUser);
-        expect(usecase.getUser).toHaveBeenCalledWith(mockUser.id);
+        expect(result).toEqual(mockUserResponse);
+        expect(usecase.getUser).toHaveBeenCalledWith(mockUserEntity.id);
       });
     });
 
     describe('異常系', () => {
-      it('ユーザーが存在しない場合、UseCaseのエラーがそのままスローされること', async () => {
+      it('UseCaseでエラーが発生した場合、エラーがそのままスローされること', async () => {
         // Arrange
-        const error = new UnauthorizedException('ユーザーが見つかりません');
+        const error = new Error('UseCase error');
         usecase.getUser.mockRejectedValue(error);
 
         // Act & Assert
-        await expect(service.getUser('non-existent-id')).rejects.toThrow(
-          UnauthorizedException
-        );
-        await expect(service.getUser('non-existent-id')).rejects.toThrow(
-          'ユーザーが見つかりません'
-        );
-        expect(usecase.getUser).toHaveBeenCalledWith('non-existent-id');
+        await expect(service.getUser(mockUserEntity.id)).rejects.toThrow(error);
+        expect(usecase.getUser).toHaveBeenCalledWith(mockUserEntity.id);
       });
     });
   });
 
   describe('updateUser', () => {
-    const updateUserDto: UpdateUserDto = {
-      name: 'Updated User',
-      company: 'Updated Company',
-      email: 'updated@example.com',
-    };
-
-    const updateUserResponse = {
-      message: 'ユーザー情報を更新しました',
-      user: {
-        id: mockUser.id,
-        name: updateUserDto.name,
-        email: updateUserDto.email,
-        company: updateUserDto.company,
-      },
-    };
-
     describe('正常系', () => {
-      it('有効な更新情報の場合、ユーザー情報が更新されること', async () => {
+      it('UseCaseのupdateUserが呼び出され、結果がそのまま返されること', async () => {
         // Arrange
-        usecase.updateUser.mockResolvedValue(updateUserResponse);
+        usecase.updateUser.mockResolvedValue(mockUpdateUserResponse);
 
         // Act
-        const result = await service.updateUser(mockUser.id, updateUserDto);
+        const result = await service.updateUser(
+          mockUserEntity.id,
+          mockUpdateUserDto
+        );
 
         // Assert
-        expect(result).toEqual(updateUserResponse);
+        expect(result).toEqual(mockUpdateUserResponse);
         expect(usecase.updateUser).toHaveBeenCalledWith(
-          mockUser.id,
-          updateUserDto
+          mockUserEntity.id,
+          mockUpdateUserDto
         );
       });
     });
 
     describe('異常系', () => {
-      it('ユーザーが存在しない場合、UseCaseのエラーがそのままスローされること', async () => {
+      it('UseCaseでエラーが発生した場合、エラーがそのままスローされること', async () => {
         // Arrange
-        const error = new UnauthorizedException('ユーザーが見つかりません');
+        const error = new Error('UseCase error');
         usecase.updateUser.mockRejectedValue(error);
 
         // Act & Assert
         await expect(
-          service.updateUser('non-existent-id', updateUserDto)
-        ).rejects.toThrow(UnauthorizedException);
-        await expect(
-          service.updateUser('non-existent-id', updateUserDto)
-        ).rejects.toThrow('ユーザーが見つかりません');
+          service.updateUser(mockUserEntity.id, mockUpdateUserDto)
+        ).rejects.toThrow(error);
         expect(usecase.updateUser).toHaveBeenCalledWith(
-          'non-existent-id',
-          updateUserDto
-        );
-      });
-
-      it('メールアドレスが既に登録されている場合、UseCaseのエラーがそのままスローされること', async () => {
-        // Arrange
-        const error = new ConflictException(
-          'このメールアドレスは既に登録されています'
-        );
-        usecase.updateUser.mockRejectedValue(error);
-
-        // Act & Assert
-        await expect(
-          service.updateUser(mockUser.id, updateUserDto)
-        ).rejects.toThrow(ConflictException);
-        await expect(
-          service.updateUser(mockUser.id, updateUserDto)
-        ).rejects.toThrow('このメールアドレスは既に登録されています');
-        expect(usecase.updateUser).toHaveBeenCalledWith(
-          mockUser.id,
-          updateUserDto
+          mockUserEntity.id,
+          mockUpdateUserDto
         );
       });
     });

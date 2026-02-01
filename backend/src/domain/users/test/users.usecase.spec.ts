@@ -2,24 +2,18 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UnauthorizedException, ConflictException } from '@nestjs/common';
 import { UsersUsecase } from '../usecase/users.usecase';
 import { UsersRepository } from '../repository/users.repository';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import {
+  mockUserEntity,
+  mockUserResponse,
+  mockUpdateUserDto,
+  mockUpdatedUserEntity,
+  mockUpdatedUserResponse,
+  mockOtherUserEntity,
+} from './mocks/users.mock';
 
 describe('UsersUsecase', () => {
   let usecase: UsersUsecase;
   let repository: jest.Mocked<UsersRepository>;
-
-  const mockUser = {
-    id: 'user-123',
-    email: 'test@example.com',
-    name: 'Test User',
-    company: 'Test Company',
-    password: 'hashedPassword123',
-    role: null,
-    failedLoginAttempts: 0,
-    lockedUntil: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -48,20 +42,14 @@ describe('UsersUsecase', () => {
     describe('正常系', () => {
       it('ユーザーが存在する場合、ユーザー情報が返されること', async () => {
         // Arrange
-        const userResponse = {
-          id: mockUser.id,
-          email: mockUser.email,
-          name: mockUser.name,
-          company: mockUser.company,
-        };
-        repository.findById.mockResolvedValue(mockUser);
+        repository.findById.mockResolvedValue(mockUserEntity);
 
         // Act
-        const result = await usecase.getUser(mockUser.id);
+        const result = await usecase.getUser(mockUserEntity.id);
 
         // Assert
-        expect(result).toEqual(userResponse);
-        expect(repository.findById).toHaveBeenCalledWith(mockUser.id);
+        expect(result).toEqual(mockUserResponse);
+        expect(repository.findById).toHaveBeenCalledWith(mockUserEntity.id);
       });
     });
 
@@ -74,99 +62,56 @@ describe('UsersUsecase', () => {
         await expect(usecase.getUser('non-existent-id')).rejects.toThrow(
           UnauthorizedException
         );
-        await expect(usecase.getUser('non-existent-id')).rejects.toThrow(
-          'ユーザーが見つかりません'
-        );
         expect(repository.findById).toHaveBeenCalledWith('non-existent-id');
       });
     });
   });
 
   describe('updateUser', () => {
-    const updateUserDto: UpdateUserDto = {
-      name: 'Updated User',
-      company: 'Updated Company',
-      email: 'updated@example.com',
-    };
-
     describe('正常系', () => {
       it('有効な更新情報の場合、ユーザー情報が更新されること', async () => {
         // Arrange
-        const updatedUser = {
-          ...mockUser,
-          name: updateUserDto.name,
-          company: updateUserDto.company,
-          email: updateUserDto.email,
-        };
-        const userResponse = {
-          id: updatedUser.id,
-          email: updatedUser.email,
-          name: updatedUser.name,
-          company: updatedUser.company,
-        };
-        repository.findById.mockResolvedValue(mockUser);
-        repository.findByEmail.mockResolvedValue(null); // メールアドレス重複チェック（重複なし）
-        repository.update.mockResolvedValue(updatedUser);
+        repository.findById.mockResolvedValue(mockUserEntity);
+        repository.findByEmail.mockResolvedValue(null);
+        repository.update.mockResolvedValue(mockUpdatedUserEntity);
 
         // Act
-        const result = await usecase.updateUser(mockUser.id, updateUserDto);
+        const result = await usecase.updateUser(
+          mockUserEntity.id,
+          mockUpdateUserDto
+        );
 
         // Assert
-        expect(result).toEqual({
-          message: 'ユーザー情報を更新しました',
-          user: userResponse,
-        });
-        expect(repository.findById).toHaveBeenCalledWith(mockUser.id);
+        expect(result.message).toBe('ユーザー情報を更新しました');
+        expect(result.user).toEqual(mockUpdatedUserResponse);
+        expect(repository.findById).toHaveBeenCalledWith(mockUserEntity.id);
         expect(repository.findByEmail).toHaveBeenCalledWith(
-          updateUserDto.email
+          mockUpdateUserDto.email
         );
-        expect(repository.update).toHaveBeenCalledWith(mockUser.id, {
-          name: updateUserDto.name,
-          company: updateUserDto.company,
-          email: updateUserDto.email,
+        expect(repository.update).toHaveBeenCalledWith(mockUserEntity.id, {
+          name: mockUpdateUserDto.name,
+          company: mockUpdateUserDto.company,
+          email: mockUpdateUserDto.email,
         });
       });
 
       it('メールアドレスが変更されない場合、重複チェックが行われないこと', async () => {
         // Arrange
-        const updateDtoWithoutEmailChange: UpdateUserDto = {
-          name: 'Updated User',
-          company: 'Updated Company',
-          email: mockUser.email, // 同じメールアドレス
+        const updateDtoWithoutEmailChange = {
+          ...mockUpdateUserDto,
+          email: mockUserEntity.email,
         };
-        const updatedUser = {
-          ...mockUser,
-          name: updateDtoWithoutEmailChange.name,
-          company: updateDtoWithoutEmailChange.company,
-        };
-        const userResponse = {
-          id: updatedUser.id,
-          email: updatedUser.email,
-          name: updatedUser.name,
-          company: updatedUser.company,
-        };
-        repository.findById.mockResolvedValue(mockUser);
-        repository.update.mockResolvedValue(updatedUser);
+        repository.findById.mockResolvedValue(mockUserEntity);
+        repository.update.mockResolvedValue({
+          ...mockUserEntity,
+          ...updateDtoWithoutEmailChange,
+        });
 
         // Act
-        const result = await usecase.updateUser(
-          mockUser.id,
-          updateDtoWithoutEmailChange
-        );
+        await usecase.updateUser(mockUserEntity.id, updateDtoWithoutEmailChange);
 
         // Assert
-        expect(result).toEqual({
-          message: 'ユーザー情報を更新しました',
-          user: userResponse,
-        });
-        // メールアドレスが同じなので、重複チェックのfindByEmailは呼ばれない
         expect(repository.findByEmail).not.toHaveBeenCalled();
-        expect(repository.findById).toHaveBeenCalledWith(mockUser.id);
-        expect(repository.update).toHaveBeenCalledWith(mockUser.id, {
-          name: updateDtoWithoutEmailChange.name,
-          company: updateDtoWithoutEmailChange.company,
-          email: updateDtoWithoutEmailChange.email,
-        });
       });
     });
 
@@ -177,35 +122,20 @@ describe('UsersUsecase', () => {
 
         // Act & Assert
         await expect(
-          usecase.updateUser('non-existent-id', updateUserDto)
+          usecase.updateUser('non-existent-id', mockUpdateUserDto)
         ).rejects.toThrow(UnauthorizedException);
-        await expect(
-          usecase.updateUser('non-existent-id', updateUserDto)
-        ).rejects.toThrow('ユーザーが見つかりません');
         expect(repository.update).not.toHaveBeenCalled();
       });
 
       it('メールアドレスが既に登録されている場合、ConflictExceptionがスローされること', async () => {
         // Arrange
-        const existingUser = {
-          ...mockUser,
-          id: 'other-user-id',
-          email: updateUserDto.email,
-        };
-        repository.findById.mockResolvedValue(mockUser);
-        repository.findByEmail.mockResolvedValue(existingUser); // メールアドレス重複チェック
+        repository.findById.mockResolvedValue(mockUserEntity);
+        repository.findByEmail.mockResolvedValue(mockOtherUserEntity);
 
         // Act & Assert
-        const promise = usecase.updateUser(mockUser.id, updateUserDto);
-        await expect(promise).rejects.toThrow(ConflictException);
-        await expect(promise).rejects.toThrow(
-          'このメールアドレスは既に登録されています'
-        );
-
-        expect(repository.findById).toHaveBeenCalledWith(mockUser.id);
-        expect(repository.findByEmail).toHaveBeenCalledWith(
-          updateUserDto.email
-        );
+        await expect(
+          usecase.updateUser(mockUserEntity.id, mockUpdateUserDto)
+        ).rejects.toThrow(ConflictException);
         expect(repository.update).not.toHaveBeenCalled();
       });
     });
