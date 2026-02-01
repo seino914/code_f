@@ -4,17 +4,18 @@ import {
   ConflictException,
   Logger,
 } from '@nestjs/common';
-import { UpdateUserDto, UpdateUserResponseDto } from './dto/update-user.dto';
-import { PrismaService } from '../../database/prisma/prisma.service';
+import { UsersRepository } from '../repository/users.repository';
+import { UpdateUserDto, UpdateUserResponseDto } from '../dto/update-user.dto';
+
 /**
- * ユーザーサービス
- * ユーザー情報の取得・更新を担当
+ * ユーザー用ユースケース
+ * ビジネスロジック層を担当
  */
 @Injectable()
-export class UsersService {
-  private readonly logger = new Logger(UsersService.name);
+export class UsersUsecase {
+  private readonly logger = new Logger(UsersUsecase.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly usersRepository: UsersRepository) {}
 
   /**
    * 現在のユーザー情報を取得
@@ -23,9 +24,7 @@ export class UsersService {
    * @throws UnauthorizedException ユーザーが見つからない場合
    */
   async getUser(userId: string) {
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const user = await this.usersRepository.findById(userId);
 
     if (!user) {
       throw new UnauthorizedException('ユーザーが見つかりません');
@@ -52,9 +51,7 @@ export class UsersService {
     updateUserDto: UpdateUserDto
   ): Promise<UpdateUserResponseDto> {
     // メールアドレスが変更される場合、重複チェック
-    const currentUser = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    const currentUser = await this.usersRepository.findById(userId);
 
     if (!currentUser) {
       throw new UnauthorizedException('ユーザーが見つかりません');
@@ -62,9 +59,9 @@ export class UsersService {
 
     // メールアドレスが変更される場合のみ重複チェック
     if (updateUserDto.email !== currentUser.email) {
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email: updateUserDto.email },
-      });
+      const existingUser = await this.usersRepository.findByEmail(
+        updateUserDto.email
+      );
 
       if (existingUser) {
         throw new ConflictException('このメールアドレスは既に登録されています');
@@ -72,13 +69,10 @@ export class UsersService {
     }
 
     // ユーザー情報を更新
-    const updatedUser = await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        name: updateUserDto.name,
-        company: updateUserDto.company,
-        email: updateUserDto.email,
-      },
+    const updatedUser = await this.usersRepository.update(userId, {
+      name: updateUserDto.name,
+      company: updateUserDto.company,
+      email: updateUserDto.email,
     });
 
     this.logger.log(`User updated successfully: ${updatedUser.email}`);

@@ -7,23 +7,23 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { LoginDto, LoginResponseDto } from './dto/login.dto';
-import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
-import { checkPasswordStrength } from '../../shared/utils/password-strength.util';
+import { UsersRepository } from '../../users/repository/users.repository';
+import { LoginDto, LoginResponseDto } from '../dto/login.dto';
+import { RegisterDto, RegisterResponseDto } from '../dto/register.dto';
+import { checkPasswordStrength } from '../../../shared/utils/password-strength.util';
 
 /**
- * 認証サービス
- * ユーザーのログイン処理とJWTトークン生成を担当
+ * 認証用ユースケース
+ * ビジネスロジック層を担当
  */
 @Injectable()
-export class AuthService {
-  private readonly logger = new Logger(AuthService.name);
+export class AuthUsecase {
+  private readonly logger = new Logger(AuthUsecase.name);
   private readonly MAX_LOGIN_ATTEMPTS = 5; // 最大ログイン試行回数
   private readonly LOCK_DURATION_MS = 15 * 60 * 1000; // ロック時間（15分）
 
   constructor(
-    private readonly prisma: PrismaService,
+    private readonly usersRepository: UsersRepository,
     private readonly jwtService: JwtService
   ) {}
 
@@ -40,9 +40,7 @@ export class AuthService {
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     // メールアドレスでユーザーを検索
-    const user = await this.prisma.user.findUnique({
-      where: { email: loginDto.email },
-    });
+    const user = await this.usersRepository.findByEmail(loginDto.email);
 
     // ユーザーが存在する場合、アカウントロック状態をチェック
     if (user) {
@@ -58,12 +56,9 @@ export class AuthService {
 
       // ロックが解除されている場合は、ロック状態をリセット
       if (user.lockedUntil && user.lockedUntil <= new Date()) {
-        await this.prisma.user.update({
-          where: { id: user.id },
-          data: {
-            failedLoginAttempts: 0,
-            lockedUntil: null,
-          },
+        await this.usersRepository.update(user.id, {
+          failedLoginAttempts: 0,
+          lockedUntil: null,
         });
       }
     }
@@ -91,14 +86,11 @@ export class AuthService {
       const newFailedAttempts = user.failedLoginAttempts + 1;
       const shouldLock = newFailedAttempts >= this.MAX_LOGIN_ATTEMPTS;
 
-      await this.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          failedLoginAttempts: newFailedAttempts,
-          lockedUntil: shouldLock
-            ? new Date(Date.now() + this.LOCK_DURATION_MS)
-            : null,
-        },
+      await this.usersRepository.update(user.id, {
+        failedLoginAttempts: newFailedAttempts,
+        lockedUntil: shouldLock
+          ? new Date(Date.now() + this.LOCK_DURATION_MS)
+          : null,
       });
 
       if (shouldLock) {
@@ -117,12 +109,9 @@ export class AuthService {
     }
 
     // ログイン成功: 失敗回数をリセット
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: {
-        failedLoginAttempts: 0,
-        lockedUntil: null,
-      },
+    await this.usersRepository.update(user.id, {
+      failedLoginAttempts: 0,
+      lockedUntil: null,
     });
 
     // JWTトークンを生成
@@ -154,9 +143,9 @@ export class AuthService {
    */
   async register(registerDto: RegisterDto): Promise<RegisterResponseDto> {
     // メールアドレスの重複チェック
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: registerDto.email },
-    });
+    const existingUser = await this.usersRepository.findByEmail(
+      registerDto.email
+    );
 
     if (existingUser) {
       throw new ConflictException('このメールアドレスは既に登録されています');
@@ -175,15 +164,13 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(registerDto.password, saltRounds);
 
     // ユーザーを作成
-    const user = await this.prisma.user.create({
-      data: {
-        email: registerDto.email,
-        password: hashedPassword,
-        name: registerDto.name,
-        company: registerDto.company,
-        failedLoginAttempts: 0,
-        lockedUntil: null,
-      },
+    const user = await this.usersRepository.create({
+      email: registerDto.email,
+      password: hashedPassword,
+      name: registerDto.name,
+      company: registerDto.company,
+      failedLoginAttempts: 0,
+      lockedUntil: null,
     });
 
     this.logger.log(`User registered successfully: ${user.email}`);
