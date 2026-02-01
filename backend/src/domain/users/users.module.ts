@@ -3,6 +3,8 @@ import { PrismaModule } from '../../database/prisma/prisma.module';
 import { AuthModule } from '../auth/auth.module';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
+import { UsersUsecase } from './usecase/users.usecase';
+import { UsersRepository } from './repository/users.repository';
 
 /**
  * ユーザーモジュール
@@ -11,7 +13,7 @@ import { UsersService } from './users.service';
 @Module({
   imports: [PrismaModule, AuthModule],
   controllers: [UsersController],
-  providers: [UsersService],
+  providers: [UsersRepository, UsersUsecase, UsersService],
   exports: [UsersService],
 })
 export class UsersModule {}
