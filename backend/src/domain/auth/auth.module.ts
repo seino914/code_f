@@ -5,6 +5,8 @@ import { PassportModule } from '@nestjs/passport';
 import { PrismaModule } from '../../database/prisma/prisma.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { AuthRepository } from './repository/auth.repository';
+import { AuthUsecase } from './usecase/auth.usecase';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { TokenBlacklistService } from './services/token-blacklist.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -33,6 +35,8 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
   ],
   controllers: [AuthController],
   providers: [
+    AuthRepository,
+    AuthUsecase,
     AuthService,
     JwtStrategy,
     TokenBlacklistService,

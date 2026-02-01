@@ -3,8 +3,13 @@ import { Response, Request } from 'express';
 import { AuthController } from '../auth.controller';
 import { AuthService } from '../auth.service';
 import { TokenBlacklistService } from '../services/token-blacklist.service';
-import { LoginDto, LoginResponseDto } from '../dto/login.dto';
-import { RegisterDto, RegisterResponseDto } from '../dto/register.dto';
+import {
+  mockLoginDto,
+  mockRegisterDto,
+  mockLoginResponse,
+  mockRegisterResponse,
+  mockUserEntity,
+} from './mocks/auth.mock';
 
 describe('AuthController', () => {
   let controller: AuthController;
@@ -19,13 +24,6 @@ describe('AuthController', () => {
     cookies: {},
     headers: {},
   } as unknown as Request;
-
-  const mockUser = {
-    id: 'user-123',
-    email: 'test@example.com',
-    name: 'Test User',
-    company: 'Test Company',
-  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -58,32 +56,23 @@ describe('AuthController', () => {
   });
 
   describe('login', () => {
-    const loginDto: LoginDto = {
-      email: 'test@example.com',
-      password: 'Password123',
-    };
-
-    const loginResponse: LoginResponseDto = {
-      accessToken: 'mock-access-token',
-      user: mockUser,
-    };
 
     describe('正常系', () => {
       it('正しい認証情報の場合、アクセストークンとユーザー情報が返され、クッキーが設定されること', async () => {
         // Arrange
-        authService.login.mockResolvedValue(loginResponse);
+        authService.login.mockResolvedValue(mockLoginResponse);
         const originalEnv = process.env.NODE_ENV;
         process.env.NODE_ENV = 'development';
 
         // Act
-        const result = await controller.login(loginDto, mockResponse);
+        const result = await controller.login(mockLoginDto, mockResponse);
 
         // Assert
-        expect(result).toEqual(loginResponse);
-        expect(authService.login).toHaveBeenCalledWith(loginDto);
+        expect(result).toEqual(mockLoginResponse);
+        expect(authService.login).toHaveBeenCalledWith(mockLoginDto);
         expect(mockResponse.cookie).toHaveBeenCalledWith(
           'auth-token',
-          loginResponse.accessToken,
+          mockLoginResponse.accessToken,
           {
             httpOnly: true,
             secure: false,
@@ -99,17 +88,17 @@ describe('AuthController', () => {
       // 本番環境にデプロイ時に再度ここのテストが正しいか確認する
       it('本番環境の場合、クッキーがSecureフラグ付きで設定されること', async () => {
         // Arrange
-        authService.login.mockResolvedValue(loginResponse);
+        authService.login.mockResolvedValue(mockLoginResponse);
         const originalEnv = process.env.NODE_ENV;
         process.env.NODE_ENV = 'production';
 
         // Act
-        await controller.login(loginDto, mockResponse);
+        await controller.login(mockLoginDto, mockResponse);
 
         // Assert
         expect(mockResponse.cookie).toHaveBeenCalledWith(
           'auth-token',
-          loginResponse.accessToken,
+          mockLoginResponse.accessToken,
           {
             httpOnly: true,
             secure: true,
@@ -130,7 +119,7 @@ describe('AuthController', () => {
         authService.login.mockRejectedValue(error);
 
         // Act & Assert
-        await expect(controller.login(loginDto, mockResponse)).rejects.toThrow(
+        await expect(controller.login(mockLoginDto, mockResponse)).rejects.toThrow(
           '認証失敗'
         );
         expect(mockResponse.cookie).not.toHaveBeenCalled();
@@ -139,30 +128,18 @@ describe('AuthController', () => {
   });
 
   describe('register', () => {
-    const registerDto: RegisterDto = {
-      email: 'newuser@example.com',
-      password: 'Password123',
-      passwordConfirm: 'Password123',
-      name: 'New User',
-      company: 'New Company',
-    };
-
-    const registerResponse: RegisterResponseDto = {
-      message: 'ユーザー登録が完了しました',
-      user: mockUser,
-    };
 
     describe('正常系', () => {
       it('有効な登録情報の場合、ユーザー情報が返されること', async () => {
         // Arrange
-        authService.register.mockResolvedValue(registerResponse);
+        authService.register.mockResolvedValue(mockRegisterResponse);
 
         // Act
-        const result = await controller.register(registerDto);
+        const result = await controller.register(mockRegisterDto);
 
         // Assert
-        expect(result).toEqual(registerResponse);
-        expect(authService.register).toHaveBeenCalledWith(registerDto);
+        expect(result).toEqual(mockRegisterResponse);
+        expect(authService.register).toHaveBeenCalledWith(mockRegisterDto);
       });
     });
 
@@ -173,7 +150,7 @@ describe('AuthController', () => {
         authService.register.mockRejectedValue(error);
 
         // Act & Assert
-        await expect(controller.register(registerDto)).rejects.toThrow(
+        await expect(controller.register(mockRegisterDto)).rejects.toThrow(
           '登録失敗'
         );
       });
@@ -182,10 +159,10 @@ describe('AuthController', () => {
 
   describe('logout', () => {
     const mockUserFromToken = {
-      id: 'user-123',
-      email: 'test@example.com',
-      name: 'Test User',
-      company: 'Test Company',
+      id: mockUserEntity.id,
+      email: mockUserEntity.email,
+      name: mockUserEntity.name,
+      company: mockUserEntity.company,
     };
 
     describe('正常系', () => {
