@@ -5,7 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './domain/auth/auth.module';
 import { UsersModule } from './domain/users/users.module';
 import { PrismaModule } from './database/prisma/prisma.module';
-import { JwtAuthGuard } from './domain/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 
 /**

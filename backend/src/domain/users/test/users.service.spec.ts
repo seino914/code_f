@@ -1,48 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UnauthorizedException, ConflictException } from '@nestjs/common';
-import { UsersService } from '../users.service';
-import { PrismaService } from '../../../database/prisma/prisma.service';
-import { UpdateUserDto } from '../dto/update-user.dto';
+import { UsersService } from '../services/users.service';
+import { UsersUsecase } from '../usecase/users.usecase';
+import {
+  mockUserEntity,
+  mockUserResponse,
+  mockUpdateUserDto,
+  mockUpdateUserResponse,
+} from './mocks/users.mock';
 
 describe('UsersService', () => {
   let service: UsersService;
-  let prismaService: {
-    user: {
-      findUnique: jest.Mock;
-      update: jest.Mock;
-    };
-  };
-
-  const mockUser = {
-    id: 'user-123',
-    email: 'test@example.com',
-    name: 'Test User',
-    company: 'Test Company',
-    password: 'hashedPassword123',
-    failedLoginAttempts: 0,
-    lockedUntil: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  let usecase: jest.Mocked<UsersUsecase>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         {
-          provide: PrismaService,
+          provide: UsersUsecase,
           useValue: {
-            user: {
-              findUnique: jest.fn(),
-              update: jest.fn(),
-            },
+            getUser: jest.fn(),
+            updateUser: jest.fn(),
           },
         },
       ],
     }).compile();
 
     service = module.get<UsersService>(UsersService);
-    prismaService = module.get(PrismaService) as typeof prismaService;
+    usecase = module.get(UsersUsecase);
   });
 
   afterEach(() => {
@@ -51,176 +36,67 @@ describe('UsersService', () => {
 
   describe('getUser', () => {
     describe('正常系', () => {
-      it('ユーザーが存在する場合、ユーザー情報が返されること', async () => {
+      it('UseCaseのgetUserが呼び出され、結果がそのまま返されること', async () => {
         // Arrange
-        prismaService.user.findUnique.mockResolvedValue(mockUser);
+        usecase.getUser.mockResolvedValue(mockUserResponse);
 
         // Act
-        const result = await service.getUser(mockUser.id);
+        const result = await service.getUser(mockUserEntity.id);
 
         // Assert
-        expect(result).toEqual({
-          id: mockUser.id,
-          email: mockUser.email,
-          name: mockUser.name,
-          company: mockUser.company,
-        });
-        expect(prismaService.user.findUnique).toHaveBeenCalledWith({
-          where: { id: mockUser.id },
-        });
+        expect(result).toEqual(mockUserResponse);
+        expect(usecase.getUser).toHaveBeenCalledWith(mockUserEntity.id);
       });
     });
 
     describe('異常系', () => {
-      it('ユーザーが存在しない場合、UnauthorizedExceptionがスローされること', async () => {
+      it('UseCaseでエラーが発生した場合、エラーがそのままスローされること', async () => {
         // Arrange
-        prismaService.user.findUnique.mockResolvedValue(null);
+        const error = new Error('UseCase error');
+        usecase.getUser.mockRejectedValue(error);
 
         // Act & Assert
-        await expect(service.getUser('non-existent-id')).rejects.toThrow(
-          UnauthorizedException
-        );
-        await expect(service.getUser('non-existent-id')).rejects.toThrow(
-          'ユーザーが見つかりません'
-        );
-        expect(prismaService.user.findUnique).toHaveBeenCalledWith({
-          where: { id: 'non-existent-id' },
-        });
+        await expect(service.getUser(mockUserEntity.id)).rejects.toThrow(error);
+        expect(usecase.getUser).toHaveBeenCalledWith(mockUserEntity.id);
       });
     });
   });
 
   describe('updateUser', () => {
-    const updateUserDto: UpdateUserDto = {
-      name: 'Updated User',
-      company: 'Updated Company',
-      email: 'updated@example.com',
-    };
-
     describe('正常系', () => {
-      it('有効な更新情報の場合、ユーザー情報が更新されること', async () => {
+      it('UseCaseのupdateUserが呼び出され、結果がそのまま返されること', async () => {
         // Arrange
-        prismaService.user.findUnique
-          .mockResolvedValueOnce(mockUser) // 現在のユーザー取得
-          .mockResolvedValueOnce(null); // メールアドレス重複チェック（重複なし）
-        const updatedUser = {
-          ...mockUser,
-          name: updateUserDto.name,
-          company: updateUserDto.company,
-          email: updateUserDto.email,
-        };
-        prismaService.user.update.mockResolvedValue(updatedUser);
-
-        // Act
-        const result = await service.updateUser(mockUser.id, updateUserDto);
-
-        // Assert
-        expect(result).toEqual({
-          message: 'ユーザー情報を更新しました',
-          user: {
-            id: updatedUser.id,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            company: updatedUser.company,
-          },
-        });
-        expect(prismaService.user.findUnique).toHaveBeenCalledTimes(2);
-        expect(prismaService.user.findUnique).toHaveBeenNthCalledWith(1, {
-          where: { id: mockUser.id },
-        });
-        expect(prismaService.user.findUnique).toHaveBeenNthCalledWith(2, {
-          where: { email: updateUserDto.email },
-        });
-        expect(prismaService.user.update).toHaveBeenCalledWith({
-          where: { id: mockUser.id },
-          data: {
-            name: updateUserDto.name,
-            company: updateUserDto.company,
-            email: updateUserDto.email,
-          },
-        });
-      });
-
-      it('メールアドレスが変更されない場合、重複チェックが行われないこと', async () => {
-        // Arrange
-        const updateDtoWithoutEmailChange: UpdateUserDto = {
-          name: 'Updated User',
-          company: 'Updated Company',
-          email: mockUser.email, // 同じメールアドレス
-        };
-        prismaService.user.findUnique.mockResolvedValue(mockUser);
-        const updatedUser = {
-          ...mockUser,
-          name: updateDtoWithoutEmailChange.name,
-          company: updateDtoWithoutEmailChange.company,
-        };
-        prismaService.user.update.mockResolvedValue(updatedUser);
+        usecase.updateUser.mockResolvedValue(mockUpdateUserResponse);
 
         // Act
         const result = await service.updateUser(
-          mockUser.id,
-          updateDtoWithoutEmailChange
+          mockUserEntity.id,
+          mockUpdateUserDto
         );
 
         // Assert
-        expect(result).toEqual({
-          message: 'ユーザー情報を更新しました',
-          user: {
-            id: updatedUser.id,
-            name: updatedUser.name,
-            email: updatedUser.email,
-            company: updatedUser.company,
-          },
-        });
-        // メールアドレスが同じなので、重複チェックのfindUniqueは1回だけ（現在のユーザー取得のみ）
-        expect(prismaService.user.findUnique).toHaveBeenCalledTimes(1);
-        expect(prismaService.user.findUnique).toHaveBeenCalledWith({
-          where: { id: mockUser.id },
-        });
+        expect(result).toEqual(mockUpdateUserResponse);
+        expect(usecase.updateUser).toHaveBeenCalledWith(
+          mockUserEntity.id,
+          mockUpdateUserDto
+        );
       });
     });
 
     describe('異常系', () => {
-      it('ユーザーが存在しない場合、UnauthorizedExceptionがスローされること', async () => {
+      it('UseCaseでエラーが発生した場合、エラーがそのままスローされること', async () => {
         // Arrange
-        prismaService.user.findUnique.mockResolvedValue(null);
+        const error = new Error('UseCase error');
+        usecase.updateUser.mockRejectedValue(error);
 
         // Act & Assert
         await expect(
-          service.updateUser('non-existent-id', updateUserDto)
-        ).rejects.toThrow(UnauthorizedException);
-        await expect(
-          service.updateUser('non-existent-id', updateUserDto)
-        ).rejects.toThrow('ユーザーが見つかりません');
-        expect(prismaService.user.update).not.toHaveBeenCalled();
-      });
-
-      it('メールアドレスが既に登録されている場合、ConflictExceptionがスローされること', async () => {
-        // Arrange
-        const existingUser = {
-          ...mockUser,
-          id: 'other-user-id',
-          email: updateUserDto.email,
-        };
-        prismaService.user.findUnique
-          .mockResolvedValueOnce(mockUser) // 現在のユーザー取得
-          .mockResolvedValueOnce(existingUser); // メールアドレス重複チェック
-
-        // Act & Assert
-        const promise = service.updateUser(mockUser.id, updateUserDto);
-        await expect(promise).rejects.toThrow(ConflictException);
-        await expect(promise).rejects.toThrow(
-          'このメールアドレスは既に登録されています'
+          service.updateUser(mockUserEntity.id, mockUpdateUserDto)
+        ).rejects.toThrow(error);
+        expect(usecase.updateUser).toHaveBeenCalledWith(
+          mockUserEntity.id,
+          mockUpdateUserDto
         );
-
-        expect(prismaService.user.findUnique).toHaveBeenCalledTimes(2);
-        expect(prismaService.user.findUnique).toHaveBeenNthCalledWith(1, {
-          where: { id: mockUser.id },
-        });
-        expect(prismaService.user.findUnique).toHaveBeenNthCalledWith(2, {
-          where: { email: updateUserDto.email },
-        });
-        expect(prismaService.user.update).not.toHaveBeenCalled();
       });
     });
   });
