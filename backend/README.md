@@ -7,22 +7,46 @@ src/
 ├── main.ts                      # エントリーポイント
 ├── app.module.ts                # ルートモジュール
 │
-├── modules/                     # ドメインモジュール（機能単位）
-│   └── auth/                   # 認証モジュール
-│       ├── decorators/         # 認証固有のデコレーター
-│       │   ├── current-user.decorator.ts
-│       │   └── public.decorator.ts
-│       ├── dto/                # Data Transfer Objects
-│       │   └── login.dto.ts
-│       ├── guards/             # 認証固有のガード
-│       │   └── jwt-auth.guard.ts
+├── domain/                      # ドメインモジュール（機能単位）
+│   ├── auth/                   # 認証モジュール
+│   │   ├── controllers/        # コントローラー
+│   │   │   └── auth.controller.ts
+│   │   ├── services/           # サービス
+│   │   │   ├── auth.service.ts
+│   │   │   └── token-blacklist.service.ts
+│   │   ├── usecase/            # ユースケース（ビジネスロジック）
+│   │   │   └── auth.usecase.ts
+│   │   ├── repository/         # リポジトリ（データアクセス層）
+│   │   ├── dto/                # Data Transfer Objects
+│   │   │   ├── login.dto.ts
+│   │   │   └── register.dto.ts
+│   │   ├── strategies/         # Passport戦略
+│   │   │   └── jwt.strategy.ts
+│   │   ├── test/               # テストファイル
+│   │   │   ├── auth.controller.spec.ts
+│   │   │   ├── auth.service.spec.ts
+│   │   │   ├── auth.usecase.spec.ts
+│   │   │   └── mocks/
+│   │   └── auth.module.ts      # モジュール定義
+│   │
+│   └── users/                  # ユーザーモジュール
+│       ├── controllers/        # コントローラー
+│       │   └── users.controller.ts
 │       ├── services/           # サービス
-│       │   └── token-blacklist.service.ts
-│       ├── strategies/         # Passport戦略
-│       │   └── jwt.strategy.ts
-│       ├── auth.controller.ts  # コントローラー
-│       ├── auth.service.ts     # サービス
-│       └── auth.module.ts      # モジュール定義
+│       │   └── users.service.ts
+│       ├── usecase/            # ユースケース（ビジネスロジック）
+│       │   └── users.usecase.ts
+│       ├── repository/         # リポジトリ（データアクセス層）
+│       │   └── users.repository.ts
+│       ├── dto/                # Data Transfer Objects
+│       │   └── update-user.dto.ts
+│       ├── test/               # テストファイル
+│       │   ├── users.controller.spec.ts
+│       │   ├── users.service.spec.ts
+│       │   ├── users.usecase.spec.ts
+│       │   ├── users.repository.spec.ts
+│       │   └── mocks/
+│       └── users.module.ts     # モジュール定義
 │
 ├── database/                    # データベース関連
 │   └── prisma/                 # Prisma ORM
@@ -30,12 +54,17 @@ src/
 │       └── prisma.module.ts    # Prismaモジュール
 │
 ├── common/                      # アプリケーション共通コンポーネント
+│   ├── decorators/             # 共通デコレーター
+│   │   ├── current-user.decorator.ts
+│   │   └── public.decorator.ts
+│   ├── guards/                 # 共通ガード
+│   │   ├── jwt-auth.guard.ts
+│   │   └── custom-throttler.guard.ts
 │   ├── filters/                # 例外フィルター
 │   │   └── http-exception.filter.ts
-│   ├── guards/                 # 共通ガード（将来）
-│   ├── interceptors/           # インターセプター（将来）
 │   ├── middleware/             # ミドルウェア
 │   │   └── request-id.middleware.ts
+│   ├── interceptors/           # インターセプター（将来）
 │   └── pipes/                  # バリデーションパイプ（将来）
 │
 ├── shared/                      # 共有ユーティリティ
@@ -57,65 +86,105 @@ src/
 
 ### 1. ドメイン駆動設計（DDD）
 
-- 機能ごとにモジュールを分割（`modules/`配下）
+- 機能ごとにモジュールを分割（`domain/`配下）
 - 各モジュールは独立性を保ち、疎結合を維持
-- ビジネスロジックはサービス層に集約
+- レイヤー構造: Controller → Service → Usecase → Repository
+- ビジネスロジックは Usecase 層に集約
 
 ### 2. 責任の分離
 
-- **modules/**: ビジネスロジック・ドメイン固有の処理
-- **common/**: アプリケーション全体で使用する横断的関心事
+- **domain/**: ビジネスロジック・ドメイン固有の処理
+  - **controllers/**: HTTPリクエスト/レスポンスの処理
+  - **services/**: 薄いラッパー層（Controller と Usecase の橋渡し）
+  - **usecase/**: ビジネスロジックの実装
+  - **repository/**: データアクセス層（Prisma へのアクセス）
+- **common/**: アプリケーション全体で使用する横断的関心事（ガード、デコレータ、フィルターなど）
 - **shared/**: 汎用的なユーティリティ・ヘルパー関数
-- **database/**: データアクセス層
+- **database/**: データベース接続管理（Prisma）
 - **config/**: 設定管理
 
 ### 3. スケーラビリティ
 
-- 新しい機能は`modules/`配下に新しいモジュールとして追加
+- 新しい機能は`domain/`配下に新しいモジュールとして追加
 - 共通処理は`common/`または`shared/`に抽出
 - モジュール間の依存は最小限に保つ
+- レイヤーごとにサブディレクトリを統一（一貫性のある構造）
 
 ## モジュールの追加方法
 
 新しい機能を追加する場合は、以下の構造に従ってください：
 
 ```
-modules/
+domain/
 └── [feature-name]/
+    ├── controllers/            # コントローラー
+    │   └── [feature-name].controller.ts
+    ├── services/               # サービス
+    │   └── [feature-name].service.ts
+    ├── usecase/                # ユースケース（ビジネスロジック）
+    │   └── [feature-name].usecase.ts
+    ├── repository/             # リポジトリ（データアクセス層）
+    │   └── [feature-name].repository.ts
     ├── dto/                    # Data Transfer Objects
-    ├── entities/               # エンティティ（オプション）
-    ├── services/               # ビジネスロジック
-    ├── [feature-name].controller.ts
-    ├── [feature-name].service.ts
-    └── [feature-name].module.ts
+    │   ├── create-[feature-name].dto.ts
+    │   └── update-[feature-name].dto.ts
+    ├── test/                   # テストファイル
+    │   ├── [feature-name].controller.spec.ts
+    │   ├── [feature-name].service.spec.ts
+    │   ├── [feature-name].usecase.spec.ts
+    │   ├── [feature-name].repository.spec.ts
+    │   └── mocks/
+    └── [feature-name].module.ts # モジュール定義
 ```
 
-### 例: ユーザー管理機能の追加
+### 例: 商品管理機能の追加
 
 ```
-modules/
-└── users/
+domain/
+└── products/
+    ├── controllers/
+    │   └── products.controller.ts
+    ├── services/
+    │   └── products.service.ts
+    ├── usecase/
+    │   └── products.usecase.ts
+    ├── repository/
+    │   └── products.repository.ts
     ├── dto/
-    │   ├── create-user.dto.ts
-    │   └── update-user.dto.ts
-    ├── users.controller.ts
-    ├── users.service.ts
-    └── users.module.ts
+    │   ├── create-product.dto.ts
+    │   └── update-product.dto.ts
+    ├── test/
+    │   ├── products.controller.spec.ts
+    │   ├── products.service.spec.ts
+    │   ├── products.usecase.spec.ts
+    │   ├── products.repository.spec.ts
+    │   └── mocks/
+    └── products.module.ts
 ```
 
 ## インポートパスの規則
 
 - **絶対パス**は使用せず、相対パスを使用
 - モジュール間の依存は`../../`形式で明示
-- 共通コンポーネントは`../../common/`または`../../shared/`からインポート
-- データベースは`../../database/prisma/`からインポート
+- 共通コンポーネントは`../../../common/`または`../../../shared/`からインポート
+- データベースは`../../../database/prisma/`からインポート
+- 同じモジュール内では`../`で相対パスを使用
 
 ### 例
 
 ```typescript
-// modules/auth/auth.service.ts
-import { PrismaService } from '../../database/prisma/prisma.service';
-import { maskSensitiveData } from '../../shared/utils/log-mask.util';
+// domain/auth/services/auth.service.ts
+import { AuthUsecase } from '../usecase/auth.usecase';
+import { LoginDto } from '../dto/login.dto';
+
+// domain/auth/controllers/auth.controller.ts
+import { AuthService } from '../services/auth.service';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+
+// domain/auth/usecase/auth.usecase.ts
+import { UsersRepository } from '../../users/repository/users.repository';
+import { checkPasswordStrength } from '../../../shared/utils/password-strength.util';
 ```
 
 ## ベストプラクティス
@@ -129,18 +198,27 @@ import { maskSensitiveData } from '../../shared/utils/log-mask.util';
 7. **ログ**: 機密情報をマスクし、リクエストIDで追跡可能に
 8. **テスト**: 各モジュールにテストファイルを配置
 
-## 今後の拡張
+## アーキテクチャの特徴
 
-以下の機能を追加する際の配置場所：
+### レイヤー構造
 
-- **ユーザー管理**: `modules/users/`
-- **商品管理**: `modules/products/`
-- **注文管理**: `modules/orders/`
-- **通知機能**: `modules/notifications/`
-- **ファイルアップロード**: `common/services/file-upload.service.ts`
-- **メール送信**: `common/services/email.service.ts`
-- **キャッシュ**: `common/services/cache.service.ts`
-- **ロギング**: `common/services/logger.service.ts`
+各ドメインモジュールは以下のレイヤー構造に従います：
+
+1. **Controller層**: HTTPリクエスト/レスポンスの処理、ルーティング
+2. **Service層**: Controller と Usecase の橋渡し（薄いラッパー）
+3. **Usecase層**: ビジネスロジックの実装（ここに主要な処理を記述）
+4. **Repository層**: データアクセス層（Prisma へのアクセス）
+
+### 共通コンポーネント
+
+- **JwtAuthGuard**: `common/guards/jwt-auth.guard.ts` - JWT認証ガード
+- **CurrentUser**: `common/decorators/current-user.decorator.ts` - 現在のユーザー情報を取得
+- **Public**: `common/decorators/public.decorator.ts` - 公開エンドポイントを示すデコレータ
+
+### リポジトリの統合
+
+- ユーザー関連のデータアクセスは `UsersRepository` に統合
+- 認証とユーザー管理の両方で同じリポジトリを使用
 
 ## 参考資料
 
