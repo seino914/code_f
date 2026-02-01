@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Response, Request } from 'express';
-import { AuthController } from '../auth.controller';
-import { AuthService } from '../auth.service';
+import { AuthController } from '../controllers/auth.controller';
+import { AuthService } from '../services/auth.service';
 import { TokenBlacklistService } from '../services/token-blacklist.service';
 import {
   mockLoginDto,

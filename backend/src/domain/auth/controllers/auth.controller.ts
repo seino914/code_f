@@ -16,13 +16,13 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
-import { LoginDto, LoginResponseDto } from './dto/login.dto';
-import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { CurrentUser } from './decorators/current-user.decorator';
-import { Public } from './decorators/public.decorator';
-import { TokenBlacklistService } from './services/token-blacklist.service';
+import { AuthService } from '../services/auth.service';
+import { LoginDto, LoginResponseDto } from '../dto/login.dto';
+import { RegisterDto, RegisterResponseDto } from '../dto/register.dto';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator';
+import { Public } from '../../../common/decorators/public.decorator';
+import { TokenBlacklistService } from '../services/token-blacklist.service';
 
 /**
  * 認証コントローラー
@@ -163,3 +163,4 @@ export class AuthController {
     return { message: 'ログアウトしました' };
   }
 }
+

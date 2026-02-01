@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
-import { TokenBlacklistService } from '../services/token-blacklist.service';
+import { TokenBlacklistService } from '../../domain/auth/services/token-blacklist.service';
 
 /**
  * JWT認証ガード
@@ -49,3 +49,4 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return super.canActivate(context) as Promise<boolean>;
   }
 }
+

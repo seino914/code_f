@@ -5,10 +5,10 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { UsersService } from './users.service';
-import { UpdateUserDto, UpdateUserResponseDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { UsersService } from '../services/users.service';
+import { UpdateUserDto, UpdateUserResponseDto } from '../dto/update-user.dto';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../../common/decorators/current-user.decorator';
 
 /**
  * ユーザーコントローラー
@@ -70,3 +70,4 @@ export class UsersController {
     return await this.usersService.updateUser(user.id, updateUserDto);
   }
 }
+

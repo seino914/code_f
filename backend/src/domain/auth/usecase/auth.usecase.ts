@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { AuthRepository } from '../repository/auth.repository';
+import { UsersRepository } from '../../users/repository/users.repository';
 import { LoginDto, LoginResponseDto } from '../dto/login.dto';
 import { RegisterDto, RegisterResponseDto } from '../dto/register.dto';
 import { checkPasswordStrength } from '../../../shared/utils/password-strength.util';
@@ -23,7 +23,7 @@ export class AuthUsecase {
   private readonly LOCK_DURATION_MS = 15 * 60 * 1000; // ロック時間（15分）
 
   constructor(
-    private readonly authRepository: AuthRepository,
+    private readonly usersRepository: UsersRepository,
     private readonly jwtService: JwtService
   ) {}
 
@@ -40,7 +40,7 @@ export class AuthUsecase {
    */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     // メールアドレスでユーザーを検索
-    const user = await this.authRepository.findByEmail(loginDto.email);
+    const user = await this.usersRepository.findByEmail(loginDto.email);
 
     // ユーザーが存在する場合、アカウントロック状態をチェック
     if (user) {
@@ -56,7 +56,7 @@ export class AuthUsecase {
 
       // ロックが解除されている場合は、ロック状態をリセット
       if (user.lockedUntil && user.lockedUntil <= new Date()) {
-        await this.authRepository.update(user.id, {
+        await this.usersRepository.update(user.id, {
           failedLoginAttempts: 0,
           lockedUntil: null,
         });
@@ -86,7 +86,7 @@ export class AuthUsecase {
       const newFailedAttempts = user.failedLoginAttempts + 1;
       const shouldLock = newFailedAttempts >= this.MAX_LOGIN_ATTEMPTS;
 
-      await this.authRepository.update(user.id, {
+      await this.usersRepository.update(user.id, {
         failedLoginAttempts: newFailedAttempts,
         lockedUntil: shouldLock
           ? new Date(Date.now() + this.LOCK_DURATION_MS)
@@ -109,7 +109,7 @@ export class AuthUsecase {
     }
 
     // ログイン成功: 失敗回数をリセット
-    await this.authRepository.update(user.id, {
+    await this.usersRepository.update(user.id, {
       failedLoginAttempts: 0,
       lockedUntil: null,
     });
@@ -143,7 +143,7 @@ export class AuthUsecase {
    */
   async register(registerDto: RegisterDto): Promise<RegisterResponseDto> {
     // メールアドレスの重複チェック
-    const existingUser = await this.authRepository.findByEmail(
+    const existingUser = await this.usersRepository.findByEmail(
       registerDto.email
     );
 
@@ -164,7 +164,7 @@ export class AuthUsecase {
     const hashedPassword = await bcrypt.hash(registerDto.password, saltRounds);
 
     // ユーザーを作成
-    const user = await this.authRepository.create({
+    const user = await this.usersRepository.create({
       email: registerDto.email,
       password: hashedPassword,
       name: registerDto.name,

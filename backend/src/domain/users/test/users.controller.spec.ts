@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { UsersController } from '../users.controller';
-import { UsersService } from '../users.service';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { UsersController } from '../controllers/users.controller';
+import { UsersService } from '../services/users.service';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import {
   mockUserFromToken,
   mockUserResponse,

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { UsersUsecase } from './usecase/users.usecase';
-import { UpdateUserDto, UpdateUserResponseDto } from './dto/update-user.dto';
+import { UsersUsecase } from '../usecase/users.usecase';
+import { UpdateUserDto, UpdateUserResponseDto } from '../dto/update-user.dto';
 
 /**
  * ユーザーサービス
@@ -35,3 +35,4 @@ export class UsersService {
     return await this.usersUsecase.updateUser(userId, updateUserDto);
   }
 }
+

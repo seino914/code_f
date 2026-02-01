@@ -7,7 +7,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { AuthUsecase } from '../usecase/auth.usecase';
-import { AuthRepository } from '../repository/auth.repository';
+import { UsersRepository } from '../../users/repository/users.repository';
 import {
   mockUserEntity,
   mockLoginDto,
@@ -27,7 +27,7 @@ jest.mock('../../../shared/utils/password-strength.util');
 
 describe('AuthUsecase', () => {
   let usecase: AuthUsecase;
-  let repository: jest.Mocked<AuthRepository>;
+  let repository: jest.Mocked<UsersRepository>;
   let jwtService: jest.Mocked<JwtService>;
 
   beforeEach(async () => {
@@ -35,7 +35,7 @@ describe('AuthUsecase', () => {
       providers: [
         AuthUsecase,
         {
-          provide: AuthRepository,
+          provide: UsersRepository,
           useValue: {
             findByEmail: jest.fn(),
             create: jest.fn(),
@@ -52,7 +52,7 @@ describe('AuthUsecase', () => {
     }).compile();
 
     usecase = module.get<AuthUsecase>(AuthUsecase);
-    repository = module.get(AuthRepository);
+    repository = module.get(UsersRepository);
     jwtService = module.get(JwtService);
   });
 

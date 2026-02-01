@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { AuthUsecase } from './usecase/auth.usecase';
-import { LoginDto, LoginResponseDto } from './dto/login.dto';
-import { RegisterDto, RegisterResponseDto } from './dto/register.dto';
+import { AuthUsecase } from '../usecase/auth.usecase';
+import { LoginDto, LoginResponseDto } from '../dto/login.dto';
+import { RegisterDto, RegisterResponseDto } from '../dto/register.dto';
 
 /**
  * 認証サービス
@@ -40,3 +40,4 @@ export class AuthService {
     return await this.authUsecase.register(registerDto);
   }
 }
+
